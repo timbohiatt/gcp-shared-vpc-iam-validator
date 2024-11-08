@@ -1,0 +1,8 @@
+name: Google Cloud Shared VPC Subnet IAM Policy Validator
+description: Check to see if the user who raises a PR has IAM permissions on a specific Google Cloud Shared VPC Subnet in a specific Region.
+
+runs: 
+  using: composite
+  steps: 
+  - run: go run main.go
+    shell: bash
