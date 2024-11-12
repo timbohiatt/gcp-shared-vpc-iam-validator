@@ -72,7 +72,7 @@ jobs:
       - name: 'Stash Changed Files List'
         id: stash-fw-rule-changes
         run: |
-          echo "${{ steps.list-fw-rule-changes.outputs.firewall_rules }}" >> ./change-files
+          echo "${{ steps.list-fw-rule-changes.outputs.firewall_rules_files }}" >> ./change-files
         working-directory: './'
 
       - name: 'CAT Changed Files List'
