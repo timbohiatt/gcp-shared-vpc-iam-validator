@@ -80,5 +80,9 @@ jobs:
         run: |
           cat ./change-files
         working-directory: './'
+
+      - name: 'shared-vpc-firewall-rule-automation'
+        id: 'shared-vpc-firewall-rule-automation'  
+        uses: ./.github/actions/shared-vpc-firewall-rule-automation 
       
 
