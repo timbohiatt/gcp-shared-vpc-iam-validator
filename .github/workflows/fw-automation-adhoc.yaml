@@ -59,5 +59,11 @@ jobs:
       - name: 'List Changed FW Rules'
         uses: dorny/paths-filter@v3
         with:
+          filters: |
+            firewall_rules: 
+              - '**/*.yaml'
+              - '**/*.yml' 
+              - '**/*.YAML'
+              - '**/*.YML'     
           list-files: 'json'
           working-directory: './firewall-rules'
