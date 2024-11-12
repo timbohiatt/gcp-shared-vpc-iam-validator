@@ -61,9 +61,9 @@ jobs:
         with:
           filters: |
             firewall_rules: 
-              - '**/*.yaml'
-              - '**/*.yml' 
-              - '**/*.YAML'
-              - '**/*.YML'     
+              - './firewall-rules/**/*.yaml'
+              - './firewall-rules/**/*.yml' 
+              - './firewall-rules/**/*.YAML'
+              - './firewall-rules/**/*.YML'     
           list-files: 'json'
           working-directory: './firewall-rules'
