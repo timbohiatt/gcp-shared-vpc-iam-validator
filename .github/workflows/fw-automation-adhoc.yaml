@@ -55,3 +55,9 @@ jobs:
         run: terraform plan 
         working-directory: ./infra/firewall-rule-automation
         continue-on-error: false
+
+      - name: 'List Changed FW Rules'
+        uses: dorny/paths-filter@v3
+        with:
+          list-files: 'json'
+          working-directory: './firewall-rules'

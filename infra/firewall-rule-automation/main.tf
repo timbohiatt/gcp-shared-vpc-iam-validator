@@ -12,7 +12,7 @@ locals {
 
 module "vpc-trusted-internal-firewall" {
   source     = "../modules/net-vpc-firewall"
-  project_id = "thiatt-manual-120"
+  project_id = "thiatt-manual-121"
   network    = "sample-vpc-global"
   default_rules_config = {
     disabled = true
