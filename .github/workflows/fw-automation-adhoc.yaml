@@ -81,6 +81,14 @@ jobs:
           cat ./change-files
         working-directory: './'
 
+      - name: 'Set up Go 1.x'
+        id: 'go-setup'  
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+
+
+
       - name: 'shared-vpc-firewall-rule-automation'
         id: 'shared-vpc-firewall-rule-automation'  
         uses: ./.github/actions/shared-vpc-firewall-rule-automation 
