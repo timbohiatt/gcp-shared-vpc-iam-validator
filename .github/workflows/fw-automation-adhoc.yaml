@@ -57,6 +57,7 @@ jobs:
         continue-on-error: false
 
       - name: 'List Changed FW Rules'
+        id: list-fw-rule-changes
         uses: dorny/paths-filter@v3
         with:
           filters: |
@@ -67,3 +68,17 @@ jobs:
               - './firewall-rules/**/*.YML'     
           list-files: 'json'
           working-directory: './firewall-rules'
+      
+      - name: 'Stash Changed Files List'
+        id: stash-fw-rule-changes
+        run: |
+          echo "${{ steps.list-fw-rule-changes.changed_files }}" >> ./change-files
+        working-directory: './'
+
+      - name: 'CAT Changed Files List'
+        id: cat-fw-rule-changes
+        run: |
+          cat ./change-files
+        working-directory: './'
+      
+
