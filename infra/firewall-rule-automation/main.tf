@@ -19,6 +19,6 @@ module "vpc-trusted-internal-firewall" {
   }
   factories_config = {
     //cidr_tpl_file = "${var.factories_config.data_dir}/networking/cidrs.yaml"
-    rules_folder  = "${local.yaml_dir}"
+    rules_folder = "${local.yaml_dir}"
   }
 }

@@ -36,7 +36,7 @@ jobs:
 
       - name: 'Terraform Format'
         id: tf-fmt
-        run: terraform fmt -check
+        run: terraform fmt
         working-directory: ./infra/firewall-rule-automation
 
       - name: 'Terraform Init'

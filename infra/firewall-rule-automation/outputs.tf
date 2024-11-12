@@ -21,9 +21,9 @@ output "tq" {
     //_factory_rule_list = module.vpc-trusted-internal-firewall.tq._factory_rule_list
     _factory_rules = module.vpc-trusted-internal-firewall.tq._factory_rules
     //_named_ranges = module.vpc-trusted-internal-firewall.tq._named_ranges
-    _rules_egress = module.vpc-trusted-internal-firewall.tq._rules_egress
+    _rules_egress  = module.vpc-trusted-internal-firewall.tq._rules_egress
     _rules_ingress = module.vpc-trusted-internal-firewall.tq._rules_ingress
-    _rules = module.vpc-trusted-internal-firewall.tq._rules
-    rules = module.vpc-trusted-internal-firewall.tq.rules
+    _rules         = module.vpc-trusted-internal-firewall.tq._rules
+    rules          = module.vpc-trusted-internal-firewall.tq.rules
   }
 }
