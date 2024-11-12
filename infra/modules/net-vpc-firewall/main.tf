@@ -26,7 +26,7 @@ locals {
     for f in local._factory_rule_files : [
       for direction, ruleset in yamldecode(file(f)) : [
         for name, rule in ruleset : {
-          name                 = name
+          name                 = (try(rule.project, trimspace(regex("\\/([^\\/]+)\\/[^\\/]+$", f)[0]),"") + "-" + name)
           deny                 = try(rule.deny, false)
           rules                = try(rule.rules, [{ protocol = "all", ports = null }])
           description          = try(rule.description, null)
@@ -39,7 +39,7 @@ locals {
           sources              = try(rule.sources, null)
           targets              = try(rule.targets, null)
           use_service_accounts = try(rule.use_service_accounts, false)
-          //project              = try(rule.project, trimspace(regex("\\/([^\\/]+)\\/[^\\/]+$", f)[0]),null)
+          project              = try(rule.project, trimspace(regex("\\/([^\\/]+)\\/[^\\/]+$", f)[0]),null)
           //network              = try(rule.network, try(var.default_network, null))
           //subnet               = try(rule.subnet, null)
           file =  try(f, null)
