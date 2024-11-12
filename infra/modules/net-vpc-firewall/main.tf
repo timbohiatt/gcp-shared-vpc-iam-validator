@@ -26,7 +26,7 @@ locals {
     for f in local._factory_rule_files : [
       for direction, ruleset in yamldecode(file(f)) : [
         for name, rule in ruleset : {
-          name                 = (try(rule.project, trimspace(regex("\\/([^\\/]+)\\/[^\\/]+$", f)[0]),"") + "-" + name)
+          name                 = format("%s-%s",try(rule.project, trimspace(regex("\\/([^\\/]+)\\/[^\\/]+$", f)[0]),""), name)
           deny                 = try(rule.deny, false)
           rules                = try(rule.rules, [{ protocol = "all", ports = null }])
           description          = try(rule.description, null)
