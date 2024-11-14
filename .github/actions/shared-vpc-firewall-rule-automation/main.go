@@ -244,12 +244,12 @@ func loadStagedRulesFiles(c *ValidatorConfig) (files []string, err error) {
 	// Process all the Individual filenames
 	if len(records) > 0 {
 		for _, record := range records {
-			path, err := filepath.Abs(fmt.Sprintf("%s/%s", path, record))
+			fwRuleFilePath, err := filepath.Abs(fmt.Sprintf("%s/%s", c.absolutePath, record))
 			if err != nil {
 				return files, fmt.Errorf("Error: 'firewall rule yaml file': %s Absolute Path cannot be calculated: %w", record, err)
 			}
-			log.Println("Info: Modified Firewall Rule File: ", path, " will be validated.")
-			files = append(files, path)
+			log.Println("Info: Modified Firewall Rule File: ", fwRuleFilePath, " will be validated.")
+			files = append(files, fwRuleFilePath)
 		}
 	} else {
 		return files, fmt.Errorf("Error: 'changed file list csv file' %s is empty, no rules can be process", path)
