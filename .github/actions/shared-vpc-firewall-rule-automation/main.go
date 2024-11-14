@@ -15,7 +15,7 @@ func main() {
 	userEmail, ok := os.LookupEnv("INPUT_user-email")
 	if !ok {
 		fmt.Println("GitHub Action Error: Required Input 'user-email' not provided.")
-		panic("Required Input 'user-email' not provided.")
+		os.Exit(1)
 	}
 
 	_ = userEmail
