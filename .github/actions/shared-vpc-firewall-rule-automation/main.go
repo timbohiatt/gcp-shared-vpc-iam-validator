@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -32,8 +33,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Sprintln("GitHub User Email: %s", userEmail)
-	fmt.Sprintln("Changed File List: %s", changedFileList)
+	log.Println("GitHub User Email: " + userEmail)
+	log.Println("Changed File List: " + changedFileList)
 
 	_ = userEmail
 	_ = changedFileList
