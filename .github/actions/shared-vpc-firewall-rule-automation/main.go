@@ -25,14 +25,12 @@ func main() {
 
 	userEmail, ok := os.LookupEnv("USER_EMAIL")
 	if !ok {
-		fmt.Println("GitHub Action Error: Required Input 'user-email' not provided.")
-		os.Exit(1)
+		fmt.Fatalln("GitHub Action Error: Required Input 'user-email' not provided.")
 	}
 
 	changedFileList, ok := os.LookupEnv("CHANGED_FILE_LIST")
 	if !ok {
-		fmt.Println("GitHub Action Error: Required Input 'changed-file-list' not provided.")
-		os.Exit(1)
+		fmt.Fatalln("GitHub Action Error: Required Input 'changed-file-list' not provided.")
 	}
 
 	log.Println("GitHub User Email: " + userEmail)
@@ -44,7 +42,7 @@ func main() {
 	err := processCSV(changedFileList)
 	if err != nil {
 		log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")
-		log.Println("Technical Error: ", err)
+		log.Fatalln("Technical Error: ", err)
 	}
 
 	// gcpProjectId, ok := os.LookupEnv("GCP_PROJECT_ID")
