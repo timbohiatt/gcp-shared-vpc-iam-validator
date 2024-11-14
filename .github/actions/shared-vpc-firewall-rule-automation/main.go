@@ -33,9 +33,9 @@ type ValidationResults struct {
 }
 
 func (r *ValidationResults) outputResults() {
-	log.Println("===================================================================")
+	log.Println("===============================================================================")
 	log.Println("=============	Firewall Rule Validation Results	================")
-	log.Println("===================================================================")
+	log.Println("===============================================================================")
 	for _, result := range r.results {
 		result.outputResult()
 		log.Println("\n\n")
