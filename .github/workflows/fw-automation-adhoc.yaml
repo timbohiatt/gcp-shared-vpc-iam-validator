@@ -85,7 +85,7 @@ jobs:
         id: get-github-actor-email
         uses: evvanErb/get-github-email-by-username-action@v1.25
         with:
-          github-username: ${{github.GITHUB_ACTOR}}
+          github-username: ${{github.actor}}
      
       - name: Print the found email
         run: echo "The email is ${{ steps.get-github-actor-email.outputs.email }}"
