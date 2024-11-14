@@ -51,12 +51,12 @@ func main() {
 		log.Fatalln("GitHub Action Error: Required Input 'validate-all' must be 'true' or 'false'. Value: " + validateAll + " is not valid.")
 	} else {
 		if ok {
-			log.Println("GitHub Action Info: Running in Validate Changes Only Mode.")
-			log.Println("GitHub Action Info: Only firewall rules that have been modified will be validated.")
+			log.Println("Info: Running in Validate Changes Only Mode.")
+			log.Println("Info: Only firewall rules that have been modified will be validated.")
 		}
 		if !ok {
-			log.Println("GitHub Action Info: Running in Validate ALL Mode.")
-			log.Println("GitHub Action Info: All firewall rules will be validated against the GitHub Actor's User Credentials.")
+			log.Println("Info: Running in Validate ALL Mode.")
+			log.Println("Info: All firewall rules will be validated against the GitHub Actor's User Credentials.")
 		}
 	}
 
@@ -174,12 +174,14 @@ func loadStagedRulesFiles(c *ValidatorConfig) (files []string, err error) {
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {
+			log.Println("End of File reached..")
 			break // End of file
 		}
 		if err != nil {
 			return files, fmt.Errorf("Error: reading 'changed file list csv file' records: %w", err)
 		}
 
+		log.Println("Hello....")
 		log.Println(record)
 		files = append(files, record[0])
 	}
