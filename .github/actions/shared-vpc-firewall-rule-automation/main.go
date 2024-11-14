@@ -194,12 +194,15 @@ func processRules(c *ValidatorConfig) (status bool, results []*ValidationResult,
 	return true, results, nil
 }
 
-func validateRule(filePath, ruleName string, rule interface{}) (result *ValidationResult, err error) {
+func validateRule(filePath, ruleName string, rule interface{}) *ValidationResult {
 
 	log.Println("Made it here my friend...")
-	//result.file = filePath
-	//result.firewallRuleName = ruleName
-	//result.status = true
+
+	result := &ValidationResult{
+		file:             filePath,
+		firewallRuleName: ruleName,
+		status:           true,
+	}
 
 	if ruleWithSubnetName, ok := rule.(map[interface{}]interface{}); ok {
 
@@ -207,7 +210,7 @@ func validateRule(filePath, ruleName string, rule interface{}) (result *Validati
 		if subnetName, ok := ruleWithSubnetName["subnet_name"].(string); ok {
 			fmt.Println("Subnet Name:", subnetName)
 		} else {
-			//result.status = false
+			result.status = false
 			result.errors = append(result.errors, "Firewall Rule Configuration Missing Key/Value: subnet_name")
 		}
 
@@ -215,12 +218,12 @@ func validateRule(filePath, ruleName string, rule interface{}) (result *Validati
 		if subnetName, ok := ruleWithSubnetName["subnet_region"].(string); ok {
 			fmt.Println("Subnet Name:", subnetName)
 		} else {
-			//result.status = false
+			result.status = false
 			result.errors = append(result.errors, "Firewall Rule Configuration Missing Key/Value: subnet_region")
 		}
 	}
 
-	return result, err
+	return result
 }
 
 func loadFirewallRuleFileToStruct(filePath string) (*FirewallRuleFile, error) {
