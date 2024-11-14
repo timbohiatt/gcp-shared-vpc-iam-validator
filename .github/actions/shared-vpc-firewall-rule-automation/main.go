@@ -135,7 +135,6 @@ func loadAllRulesFiles(c *ValidatorConfig) (files []string, err error) {
 func loadStagedRulesFiles(c *ValidatorConfig) (files []string, err error) {
 
 	// Calculate relative absolute path for changedFileList in relation to GitHub Action
-	//githubWorkspace, _ := os.LookupEnv("GITHUB_WORKSPACE")
 	path, err := getAbsPath(c.absolutePath, c.changedFileList)
 	if err != nil {
 		return files, fmt.Errorf("Error: 'changed file list csv file' Absolute Path cannot be calculated: %w", err)
@@ -173,8 +172,13 @@ func loadStagedRulesFiles(c *ValidatorConfig) (files []string, err error) {
 	// Process all the Individual filenames
 	if len(records) > 0 {
 		for _, record := range records {
-			log.Println("Staged Firewall Rule File: %s", record)
-			files = append(files, record)
+
+			path, err := getAbsPath(c.absolutePath, record)
+			if err != nil {
+				return files, fmt.Errorf("Error: 'firewall rule yaml file': %s Absolute Path cannot be calculated: %w", record, err)
+			}
+			log.Println("Info: Modified Firewall Rule File: ", path, " will be validated.")
+			files = append(files, path)
 		}
 	} else {
 		return files, fmt.Errorf("Error: 'changed file list csv file' %s is empty, no rules can be process", path)
