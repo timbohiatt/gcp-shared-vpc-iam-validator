@@ -3,7 +3,7 @@ description: Check to see if the user who raises a PR has IAM permissions on a s
 author: Tim Hiatt (timhiatt@google.com)
 
 inputs: 
-  user-email: 
+  person: 
     description: GitHub user Email (Should also be GCP User Email)
     required: true
     default: ${{github.GITHUB_ACTOR}}
