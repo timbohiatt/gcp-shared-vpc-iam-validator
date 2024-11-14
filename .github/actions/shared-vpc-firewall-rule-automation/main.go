@@ -244,8 +244,7 @@ func loadStagedRulesFiles(c *ValidatorConfig) (files []string, err error) {
 	// Process all the Individual filenames
 	if len(records) > 0 {
 		for _, record := range records {
-
-			path, err := getAbsPath(c.absolutePath, record)
+			path, err := filepath.Abs(fmt.Sprintf("%s/%s", path, record))
 			if err != nil {
 				return files, fmt.Errorf("Error: 'firewall rule yaml file': %s Absolute Path cannot be calculated: %w", record, err)
 			}
