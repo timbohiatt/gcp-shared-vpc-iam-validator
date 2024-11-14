@@ -196,6 +196,7 @@ func processRules(c *ValidatorConfig) (status bool, results []*ValidationResult,
 
 func validateRule(filePath, ruleName string, rule interface{}) (result *ValidationResult, err error) {
 
+	log.Println("Made it here my friend...")
 	result.file = filePath
 	result.firewallRuleName = ruleName
 	result.status = true
