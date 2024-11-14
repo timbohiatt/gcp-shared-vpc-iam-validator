@@ -130,7 +130,8 @@ func loadAllRulesFiles(c *ValidatorConfig) (files []string, err error) {
 func loadStagedRulesFiles(c *ValidatorConfig) (files []string, err error) {
 
 	// Calculate relative absolute path for changedFileList in relation to GitHub Action
-	path, err := getAbsPath(c.rulesPath, c.changedFileList)
+	githubWorkspace, _ := os.LookupEnv("GITHUB_WORKSPACE")
+	path, err := getAbsPath(githubWorkspace, c.changedFileList)
 	if err != nil {
 		return files, fmt.Errorf("Error: 'changed file list csv file' Absolute Path cannot be calculated: %w", err)
 	}
