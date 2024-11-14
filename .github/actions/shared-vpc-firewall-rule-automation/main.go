@@ -4,10 +4,13 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 var approvedRoles = map[string]bool{
@@ -23,6 +26,17 @@ type ValidatorConfig struct {
 	userEmail       string
 	ruleFiles       []string
 	changedFileList string
+}
+
+type ValidationResult struct {
+	file             string
+	firewallRuleName string
+	error            string
+}
+
+type FirewallRuleFile struct {
+	IngressRules map[string]interface{} `yaml:"ingress"`
+	EgressRules  map[string]interface{} `yaml:"egress"`
 }
 
 func main() {
@@ -78,11 +92,26 @@ func main() {
 		changedFileList: changedFileList,
 	}
 
-	status, err := processRules(config)
+	// Calculate List of YAML Files containing Firewall Rules that need to be processed
+	status, err := calculateRuleFiles(config)
 	if err != nil {
-		log.Fatalf("Error: processing firewall rule validation: %w", err)
+		// An Error occurred loading, or processing yaml files containing firewall rules for validation
+		log.Fatalln("Error: processing firewall rule validation: ", err)
 	}
 
+	// No Rule Files were staged or available for processing.
+	if !status {
+		// Log Error to GitHub workflow and prevent merge.
+		log.Fatalln("Error: no firewall rule files or firewall rules to validate.", err)
+	}
+
+	// Process the rules
+	status, results, err := processRules(config)
+	if err != nil {
+		log.Fatalln("Error: processing firewall rule validation: ", err)
+	}
+
+	_ = results
 	_ = status
 
 	// // Configure Absolute Path
@@ -102,7 +131,7 @@ func main() {
 	// }
 }
 
-func processRules(c *ValidatorConfig) (status bool, err error) {
+func calculateRuleFiles(c *ValidatorConfig) (status bool, err error) {
 	if c.validateAll {
 		// Validate all Firewall Rules listed in all YAML files within the current Git Commit.
 		log.Println("Info: loading all firewall rules stored in YAML files in current git commit")
@@ -119,13 +148,56 @@ func processRules(c *ValidatorConfig) (status bool, err error) {
 		}
 	}
 
-	log.Println("Firewall Rule Files to Processed:")
-	log.Println(c.ruleFiles)
+	// At least yaml one file has been selected for validation
+	if len(c.ruleFiles) >= 1 {
+		return true, nil
+	}
+	// No yaml files have been selected
+	return false, fmt.Errorf("Error: no firewall rule yaml files or firewall rules to validate: %w", err)
+}
 
-	// Process each YAML File and Validate the rules
+func processRules(c *ValidatorConfig) (status bool, results []*ValidationResult, err error) {
+
+	// validate github actor
+
+	for _, filePath := range c.ruleFiles {
+		// Load the Firewall Rule File
+		fwRuleFile, err := loadFirewallRuleFileToStruct(filePath)
+		if err != nil {
+			return false, results, fmt.Errorf("Error: reading firewall rules file: %s, %w", filePath, err)
+		}
+
+		log.Println(fwRuleFile)
+
+		// validate rule contains destination_range (ingress)
+		// validate rule contains source_range (egress)
+		// validate rule contains subnet name
+		// validate rule contains subnet region
+		// validate subnet in region exists
+		// get all subnet ip cidrs
+		// validate source_range or destination_range in rule within subnet ip cidr
+		// validate github actor has roles on subnet
+	}
 
 	// Return PASS or FAIL Response.
-	return true, nil
+	return true, results, nil
+}
+
+func loadFirewallRuleFileToStruct(filePath string) (*FirewallRuleFile, error) {
+	// Read the YAML file
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("error reading YAML file: %w", err)
+	}
+
+	// Unmarshal the YAML data into the Config struct
+	fwRuleFile := &FirewallRuleFile{}
+	err = yaml.Unmarshal(data, fwRuleFile)
+	if err != nil {
+		return fwRuleFile, fmt.Errorf("error unmarshalling YAML: %w", err)
+	}
+
+	return fwRuleFile, nil
 }
 
 func loadAllRulesFiles(c *ValidatorConfig) (files []string, err error) {
