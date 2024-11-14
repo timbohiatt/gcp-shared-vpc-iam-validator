@@ -1,0 +1,14 @@
+{
+    "valid_domains":[
+
+    ],
+    "validation_rules": {
+        "required_subnet_roles": [
+            "roles/compute.networkAdmin",
+            "roles/compute.networkUser"
+        ]
+    },
+    "exempt_users": [
+
+    ]
+}

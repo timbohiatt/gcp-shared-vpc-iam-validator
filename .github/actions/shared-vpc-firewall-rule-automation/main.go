@@ -12,10 +12,13 @@ var approvedRoles = map[string]bool{
 
 func main() {
 
-	/*userEmail, ok := os.LookupEnv("USER_EMAIL")
+	userEmail, ok := os.LookupEnv("INPUT_user-email")
 	if !ok {
-		panic("USER_EMAIL environment variable is not set")
-	}*/
+		fmt.Println("GitHub Action Error: Required Input 'user-email' not provided.")
+		panic("Required Input 'user-email' not provided.")
+	}
+
+	_ = userEmail
 
 	// gcpProjectId, ok := os.LookupEnv("GCP_PROJECT_ID")
 	// if !ok {

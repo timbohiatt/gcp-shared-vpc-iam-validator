@@ -13,4 +13,4 @@ runs:
   using: composite
   steps: 
   - run: cd ${{github.action_path}} && go run main.go
-    shell: bash
+    shell: bashyoutubeyoudfdfds
