@@ -13,12 +13,12 @@ var approvedRoles = map[string]bool{
 func main() {
 
 	// Get all environment variables
-	envVars := os.Environ()
+	//envVars := os.Environ()
 
 	// Iterate over the slice and print each variable
-	for _, envVar := range envVars {
+	/*for _, envVar := range envVars {
 		fmt.Println(envVar)
-	}
+	}*/
 
 	userEmail, ok := os.LookupEnv("USER_EMAIL")
 	if !ok {
