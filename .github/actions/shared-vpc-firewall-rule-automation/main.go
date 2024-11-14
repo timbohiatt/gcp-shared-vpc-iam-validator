@@ -25,12 +25,12 @@ func main() {
 
 	userEmail, ok := os.LookupEnv("USER_EMAIL")
 	if !ok {
-		fmt.Fatalln("GitHub Action Error: Required Input 'user-email' not provided.")
+		log.Fatalln("GitHub Action Error: Required Input 'user-email' not provided.")
 	}
 
 	changedFileList, ok := os.LookupEnv("CHANGED_FILE_LIST")
 	if !ok {
-		fmt.Fatalln("GitHub Action Error: Required Input 'changed-file-list' not provided.")
+		log.Fatalln("GitHub Action Error: Required Input 'changed-file-list' not provided.")
 	}
 
 	log.Println("GitHub User Email: " + userEmail)
