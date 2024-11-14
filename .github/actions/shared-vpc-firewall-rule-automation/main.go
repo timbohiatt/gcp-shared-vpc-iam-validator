@@ -27,13 +27,13 @@ type ValidatorConfig struct {
 
 func main() {
 
-	// Get all environment variables
-	envVars := os.Environ()
+	// // Get all environment variables
+	// envVars := os.Environ()
 
-	// Iterate over the slice and print each variable
-	for _, envVar := range envVars {
-		fmt.Println(envVar)
-	}
+	// // Iterate over the slice and print each variable
+	// for _, envVar := range envVars {
+	// 	fmt.Println(envVar)
+	// }
 
 	absolutePath, ok := os.LookupEnv("ABS_PATH")
 	if !ok {
@@ -130,8 +130,8 @@ func loadAllRulesFiles(c *ValidatorConfig) (files []string, err error) {
 func loadStagedRulesFiles(c *ValidatorConfig) (files []string, err error) {
 
 	// Calculate relative absolute path for changedFileList in relation to GitHub Action
-	githubWorkspace, _ := os.LookupEnv("GITHUB_WORKSPACE")
-	path, err := getAbsPath(githubWorkspace, c.changedFileList)
+	//githubWorkspace, _ := os.LookupEnv("GITHUB_WORKSPACE")
+	path, err := getAbsPath(c.absolutePath, c.changedFileList)
 	if err != nil {
 		return files, fmt.Errorf("Error: 'changed file list csv file' Absolute Path cannot be calculated: %w", err)
 	}
@@ -187,7 +187,7 @@ func loadStagedRulesFiles(c *ValidatorConfig) (files []string, err error) {
 
 // Configure Absolute Path
 func getAbsPath(path, filename string) (string, error) {
-	outputPath, err := filepath.Abs(fmt.Sprintf("%s%s", path, filepath.Base(filename)))
+	outputPath, err := filepath.Abs(fmt.Sprintf("%s/%s", path, filepath.Base(filename)))
 	if err != nil {
 		return "", err
 	}

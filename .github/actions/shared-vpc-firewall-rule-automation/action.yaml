@@ -6,7 +6,7 @@ inputs:
   abs-path: 
     description: The Absolute path of the GitHub Action relative to the root of the GitHub Repo
     required: true 
-    default: "../../../"
+    default: ${{ github.workspace }}
   rules-path: 
     description: The GitHub Repo Path to root directory containing Firewall Rule YAML Files.
     required: true 

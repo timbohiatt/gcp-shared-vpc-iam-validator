@@ -12,8 +12,15 @@ ingress:
       - protocol: tcp
         ports:
           - 80
-
   allow-icmp-app-vm:
+    description: Enable ICMP
+    match:
+      source_ranges:
+        - 10.128.0.0/19
+        - 10.128.32.0/19
+      layer4_configs:
+        - protocol: icmp
+  allow-icmp-app-vm2:
     description: Enable ICMP
     match:
       source_ranges:
