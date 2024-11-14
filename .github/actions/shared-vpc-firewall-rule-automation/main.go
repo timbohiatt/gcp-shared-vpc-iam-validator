@@ -12,6 +12,14 @@ var approvedRoles = map[string]bool{
 
 func main() {
 
+	// Get all environment variables
+	envVars := os.Environ()
+
+	// Iterate over the slice and print each variable
+	for _, envVar := range envVars {
+		fmt.Println(envVar)
+	}
+
 	userEmail, ok := os.LookupEnv("INPUT_user-email")
 	if !ok {
 		fmt.Println("GitHub Action Error: Required Input 'user-email' not provided.")
@@ -34,14 +42,6 @@ func main() {
 	// if !ok {
 	// 	panic("SUBNET_REGION environment variable is not set")
 	// }
-
-	// Get all environment variables
-	envVars := os.Environ()
-
-	// Iterate over the slice and print each variable
-	for _, envVar := range envVars {
-		fmt.Println(envVar)
-	}
 
 	//fmt.Sprintln("Acting User: %s", userEmail)
 
