@@ -31,7 +31,8 @@ type ValidatorConfig struct {
 type ValidationResult struct {
 	file             string
 	firewallRuleName string
-	error            string
+	errors           []string
+	status           bool
 }
 
 type FirewallRuleFile struct {
@@ -167,6 +168,16 @@ func processRules(c *ValidatorConfig) (status bool, results []*ValidationResult,
 			return false, results, fmt.Errorf("Error: reading firewall rules file: %s, %w", filePath, err)
 		}
 
+		// Validate Ingress Rules
+		for ruleName, ruleValue := range fwRuleFile.IngressRules {
+			validateRule(filePath, ruleName, ruleValue)
+		}
+
+		// Validate Egress Rules
+		for ruleName, ruleValue := range fwRuleFile.EgressRules {
+			validateRule(filePath, ruleName, ruleValue)
+		}
+
 		log.Println(fwRuleFile)
 
 		// validate rule contains destination_range (ingress)
@@ -181,6 +192,34 @@ func processRules(c *ValidatorConfig) (status bool, results []*ValidationResult,
 
 	// Return PASS or FAIL Response.
 	return true, results, nil
+}
+
+func validateRule(filePath, ruleName string, rule interface{}) (result *ValidationResult, err error) {
+
+	result.file = filePath
+	result.firewallRuleName = ruleName
+	result.status = true
+
+	if ruleWithSubnetName, ok := rule.(map[interface{}]interface{}); ok {
+
+		// Check if Rule has Subnet Name
+		if subnetName, ok := ruleWithSubnetName["subnet_name"].(string); ok {
+			fmt.Println("Subnet Name:", subnetName)
+		} else {
+			result.status = false
+			result.errors = append(result.errors, "Firewall Rule Configuration Missing Key/Value: subnet_name")
+		}
+
+		// Check if Rule has Subnet Region
+		if subnetName, ok := ruleWithSubnetName["subnet_region"].(string); ok {
+			fmt.Println("Subnet Name:", subnetName)
+		} else {
+			result.status = false
+			result.errors = append(result.errors, "Firewall Rule Configuration Missing Key/Value: subnet_region")
+		}
+	}
+
+	return result, err
 }
 
 func loadFirewallRuleFileToStruct(filePath string) (*FirewallRuleFile, error) {
