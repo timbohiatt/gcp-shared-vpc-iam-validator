@@ -4,7 +4,7 @@ description: Check to see if the user who raises a PR has IAM permissions on a s
 runs: 
   using: composite
   steps: 
-  - run: ls
+  - run: cd ${{github.action_path}} && ls
     shell: bash  
-  - run: go run main.go
+  - run: cd ${{github.action_path}} && go run main.go
     shell: bash
