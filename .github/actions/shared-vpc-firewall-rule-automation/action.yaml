@@ -25,7 +25,7 @@ runs:
   - run: cd ${{github.action_path}} && go run main.go
     shell: bash
     env:
-        ABS_PATH: $({{ inputs.abs-path }})
+        ABS_PATH: ${{ inputs.abs-path }}
         VALIDATE_ALL: ${{ inputs.validate-all }}
         USER_EMAIL: ${{ inputs.user-email }}
         CHANGED_FILE_LIST: ${{ inputs.changed-file-list }}
