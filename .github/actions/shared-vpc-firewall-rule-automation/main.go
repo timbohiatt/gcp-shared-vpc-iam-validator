@@ -28,11 +28,32 @@ type ValidatorConfig struct {
 	changedFileList string
 }
 
+type ValidationResults struct {
+	results []*ValidationResult
+}
+
+func (r *ValidationResults) outputResults() {
+	for _, result := range r.results {
+		result.outputResult()
+	}
+}
+
 type ValidationResult struct {
 	file             string
 	firewallRuleName string
 	errors           []string
 	status           bool
+}
+
+func (r *ValidationResult) outputResult() {
+	log.Println("Firewall Rule Name: ", r.firewallRuleName)
+	log.Println("Firewall Rule File: ", r.file)
+	log.Println("Firewall Rule File Validated: ", r.status)
+	if !r.status {
+		for _, err := range r.errors {
+			log.Println("Validation Error: ", err)
+		}
+	}
 }
 
 type FirewallRuleFile struct {
@@ -112,8 +133,7 @@ func main() {
 		log.Fatalln("Error: processing firewall rule validation: ", err)
 	}
 
-	_ = results
-	_ = status
+	results.outputResults()
 
 	// // Configure Absolute Path
 	// filePath, err := filepath.Abs(fmt.Sprintf("%s%s", absolutePath, filepath.Base(changedFileList)))
@@ -157,7 +177,7 @@ func calculateRuleFiles(c *ValidatorConfig) (status bool, err error) {
 	return false, fmt.Errorf("Error: no firewall rule yaml files or firewall rules to validate: %w", err)
 }
 
-func processRules(c *ValidatorConfig) (status bool, results []*ValidationResult, err error) {
+func processRules(c *ValidatorConfig) (status bool, results ValidationResults, err error) {
 
 	// validate github actor
 
@@ -170,15 +190,15 @@ func processRules(c *ValidatorConfig) (status bool, results []*ValidationResult,
 
 		// Validate Ingress Rules
 		for ruleName, ruleValue := range fwRuleFile.IngressRules {
-			validateRule(filePath, ruleName, ruleValue)
+			// Process each Ingress Rule
+			results.results = append(results.results, validateRule(filePath, ruleName, ruleValue))
 		}
 
 		// Validate Egress Rules
 		for ruleName, ruleValue := range fwRuleFile.EgressRules {
-			validateRule(filePath, ruleName, ruleValue)
+			// Process Each Egress Rule
+			results.results = append(results.results, validateRule(filePath, ruleName, ruleValue))
 		}
-
-		log.Println(fwRuleFile)
 
 		// validate rule contains destination_range (ingress)
 		// validate rule contains source_range (egress)
@@ -195,8 +215,6 @@ func processRules(c *ValidatorConfig) (status bool, results []*ValidationResult,
 }
 
 func validateRule(filePath, ruleName string, rule interface{}) *ValidationResult {
-
-	log.Println("Made it here my friend...")
 
 	result := &ValidationResult{
 		file:             filePath,
