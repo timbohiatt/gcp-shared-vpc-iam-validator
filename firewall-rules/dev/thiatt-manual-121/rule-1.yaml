@@ -15,7 +15,7 @@ ingress:
           - 80
   allow-icmp-app-vm:
     subnet_name: "tims subnet"
-    subnet_region: "us-central1"
+    subnet_region: "us-central2"
     description: Enable ICMP
     match:
       source_ranges:

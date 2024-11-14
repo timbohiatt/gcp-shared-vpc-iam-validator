@@ -33,15 +33,15 @@ type ValidationResults struct {
 }
 
 func (r *ValidationResults) outputResults() {
-	log.Println("===============================================================================")
+	log.Println("============================================================================")
 	log.Println("=============	Firewall Rule Validation Results	================")
-	log.Println("===============================================================================")
+	log.Println("============================================================================")
 	for _, result := range r.results {
 		result.outputResult()
 		log.Println("\n\n")
 	}
-	log.Println("===================================================================")
-	log.Println("===================================================================")
+	log.Println("======================================================================")
+	log.Println("======================================================================")
 }
 
 type ValidationResult struct {
@@ -52,16 +52,18 @@ type ValidationResult struct {
 }
 
 func (r *ValidationResult) outputResult() {
-	log.Println("============================================================")
-	log.Println("Firewall Rule Name: ", r.firewallRuleName)
-	log.Println("Firewall Rule File: ", r.file)
-	log.Println("Firewall Rule File Validated: ", r.status)
+	// If Validation Status is not True
 	if !r.status {
+		log.Println("============================================================")
+		log.Println("Firewall Rule Name: ", r.firewallRuleName)
+		log.Println("Firewall Rule File: ", r.file)
+		log.Println("Firewall Rule File Validated: ", r.status)
 		for _, err := range r.errors {
+			// Output Each Validation Error
 			log.Println("\t - Validation Error: ", err)
 		}
+		log.Println("============================================================")
 	}
-	log.Println("============================================================")
 }
 
 type FirewallRuleFile struct {
