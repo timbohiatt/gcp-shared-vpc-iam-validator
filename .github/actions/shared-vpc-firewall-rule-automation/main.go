@@ -33,8 +33,10 @@ type ValidationResults struct {
 }
 
 func (r *ValidationResults) outputResults() {
+
 	for _, result := range r.results {
 		result.outputResult()
+		log.Println("\n\n")
 	}
 }
 
@@ -46,14 +48,16 @@ type ValidationResult struct {
 }
 
 func (r *ValidationResult) outputResult() {
+	log.Println("============================================================")
 	log.Println("Firewall Rule Name: ", r.firewallRuleName)
 	log.Println("Firewall Rule File: ", r.file)
 	log.Println("Firewall Rule File Validated: ", r.status)
 	if !r.status {
 		for _, err := range r.errors {
-			log.Println("Validation Error: ", err)
+			log.Println("\t\t - Validation Error: ", err)
 		}
 	}
+	log.Println("============================================================/n")
 }
 
 type FirewallRuleFile struct {
