@@ -158,7 +158,7 @@ func loadStagedRulesFiles(c *ValidatorConfig) (files []string, err error) {
 	reader := csv.NewReader(file)
 
 	// Check if the file is empty
-	_, err = reader.Read() // Try to read the first record
+	recordDummy, err := reader.Read() // Try to read the first record
 	if err == io.EOF {
 		// File is empty, error
 		return files, fmt.Errorf("Error: 'changed file list csv file' %s is empty, no rules can be process", path)
@@ -166,6 +166,9 @@ func loadStagedRulesFiles(c *ValidatorConfig) (files []string, err error) {
 		// File can't be read, also error
 		return files, fmt.Errorf("Error: reading 'changed file list csv file': %w", err)
 	}
+
+	log.Println("Hello 1....")
+	log.Println(recordDummy)
 
 	// Reset new reader to the restart at the beginning of the file
 	reader = csv.NewReader(file)
