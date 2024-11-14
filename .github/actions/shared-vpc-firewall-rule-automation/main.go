@@ -26,7 +26,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	changedFileList, ok := os.LookupEnv("CHANGED_FILE_LIST")
+	if !ok {
+		fmt.Println("GitHub Action Error: Required Input 'changed-file-list' not provided.")
+		os.Exit(1)
+	}
+
+	fmt.Sprintln("GitHub User Email: %s", userEmail)
+	fmt.Sprintln("Changed File List: %s", changedFileList)
+
 	_ = userEmail
+	_ = changedFileList
 
 	// gcpProjectId, ok := os.LookupEnv("GCP_PROJECT_ID")
 	// if !ok {

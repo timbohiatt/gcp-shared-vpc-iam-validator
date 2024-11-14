@@ -6,6 +6,9 @@ inputs:
   user-email: 
     description: GitHub user Email (Should also be GCP User Email)
     required: true
+  changed-file-list: 
+    description: CSV file containing a list of modified files each containing firewall rules in YAML format
+    required: true
 
 
 runs: 
@@ -15,3 +18,4 @@ runs:
     shell: bash
     env:
         USER_EMAIL: ${{ inputs.user-email }}
+        CHANGED_FILE_LIST: ${{ inputs.changed-file-list }}

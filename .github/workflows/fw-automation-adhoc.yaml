@@ -72,13 +72,13 @@ jobs:
       - name: 'Stash Changed Files List'
         id: stash-fw-rule-changes
         run: |
-          echo "${{ steps.list-fw-rule-changes.outputs.firewall_rules_files }}" >> ./change-files
+          echo "${{ steps.list-fw-rule-changes.outputs.firewall_rules_files }}" >> ./changed-files-list
         working-directory: './'
 
       - name: 'CAT Changed Files List'
         id: cat-fw-rule-changes
         run: |
-          cat ./change-files
+          cat ./changed-files-list
         working-directory: './'
 
       - name: Get GitHub Actor Email
@@ -101,6 +101,7 @@ jobs:
         uses: ./.github/actions/shared-vpc-firewall-rule-automation 
         with: 
           user-email: ${{ steps.get-github-actor-email.outputs.email }}
+          changed-file-list: './changed-files-list'
     
       
 
