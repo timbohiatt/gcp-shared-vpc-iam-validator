@@ -28,12 +28,12 @@ type ValidatorConfig struct {
 func main() {
 
 	// Get all environment variables
-	//envVars := os.Environ()
+	envVars := os.Environ()
 
 	// Iterate over the slice and print each variable
-	/*for _, envVar := range envVars {
+	for _, envVar := range envVars {
 		fmt.Println(envVar)
-	}*/
+	}
 
 	absolutePath, ok := os.LookupEnv("ABS_PATH")
 	if !ok {
