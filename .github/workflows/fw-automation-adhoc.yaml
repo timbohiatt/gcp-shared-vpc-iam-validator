@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - '**/*'
+      - '!main'
     #paths: 
     #  - 'firewall-rules/**'
   workflow_dispatch:
