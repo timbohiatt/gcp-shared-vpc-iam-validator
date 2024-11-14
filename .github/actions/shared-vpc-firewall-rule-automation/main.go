@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
 	"os"
 )
@@ -38,6 +40,12 @@ func main() {
 
 	_ = userEmail
 	_ = changedFileList
+
+	err := processCSV(changedFileList)
+	if err != nil {
+		log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")
+		log.Println("Technical Error: ", err)
+	}
 
 	// gcpProjectId, ok := os.LookupEnv("GCP_PROJECT_ID")
 	// if !ok {
@@ -86,4 +94,51 @@ func main() {
 	// } else {
 	// 	fmt.Printf("User: %s does not have '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName)
 	// }
+}
+
+func processCSV(filename string) error {
+	// Check if the file exists
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return fmt.Errorf("Changed File List CSV file %s does not exist", filename)
+	}
+
+	// Open the CSV file
+	file, err := os.Open(filename)
+	if err != nil {
+		return fmt.Errorf("error opening file Changed File List CSV file: %w", err)
+	}
+	defer file.Close()
+
+	// Create a CSV reader
+	reader := csv.NewReader(file)
+
+	// Check if the file is empty
+	_, err = reader.Read() // Try to read the first record
+	if err == io.EOF {
+		return fmt.Errorf("Changed File List CSV file %s is empty, no rules to process", filename)
+	} else if err != nil {
+		return fmt.Errorf("error reading Changed File List CSV file: %w", err)
+	}
+
+	// Reset the reader to the beginning of the file
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		return fmt.Errorf("error seeking Changed File List CSV file: %w", err)
+	}
+	reader = csv.NewReader(file)
+
+	// Read and output each entry on a new line
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break // End of file
+		}
+		if err != nil {
+			return fmt.Errorf("error reading Changed File List CSV file record: %w", err)
+		}
+
+		fmt.Println(record)
+	}
+
+	return nil
 }
