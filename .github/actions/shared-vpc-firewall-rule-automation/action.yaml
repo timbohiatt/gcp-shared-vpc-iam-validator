@@ -4,13 +4,17 @@ author: Tim Hiatt (timhiatt@google.com)
 
 inputs: 
   abs-path: 
-    description: Enforce the Validation of all Firewall Rules against GitHub Actor's IAM Bindings
+    description: The Absolute path of the GitHub Action relative to the root of the GitHub Repo
     required: true 
     default: "../../../"
+  rules-path: 
+    description: The GitHub Repo Path to root directory containing Firewall Rule YAML Files.
+    required: true 
+    default: "./firewall-rules"
   validate-all: 
     description: Enforce the Validation of all Firewall Rules against GitHub Actor's IAM Bindings
     required: true 
-    default: "false"
+    default: "true"
   user-email: 
     description: GitHub user Email (Should also be GCP User Email)
     required: true
@@ -26,6 +30,7 @@ runs:
     shell: bash
     env:
         ABS_PATH: ${{ inputs.abs-path }}
+        RULES_PATH: ${{ inputs.rules-path }}
         VALIDATE_ALL: ${{ inputs.validate-all }}
         USER_EMAIL: ${{ inputs.user-email }}
         CHANGED_FILE_LIST: ${{ inputs.changed-file-list }}

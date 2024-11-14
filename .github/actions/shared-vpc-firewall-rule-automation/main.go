@@ -7,11 +7,22 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 var approvedRoles = map[string]bool{
 	"roles/compute.networkUser":  true,
 	"roles/compute.networkAdmin": true,
+}
+
+// ValidatorConfig ...
+type ValidatorConfig struct {
+	absolutePath    string
+	rulesPath       string
+	validateAll     bool
+	userEmail       string
+	ruleFiles       []string
+	changedFileList string
 }
 
 func main() {
@@ -29,14 +40,24 @@ func main() {
 		log.Fatalln("GitHub Action Error: Required Input 'abs-path' not provided.")
 	}
 
-	validateAll, ok := os.LookupEnv("VALIDATE_ALL")
+	rulesPath, ok := os.LookupEnv("RULES_PATH")
 	if !ok {
-		log.Println("GitHub Action Info: Running in Validate Changes Only Mode.")
-		log.Println("GitHub Action Info: Only firewall rules that have been modified will be validated.")
+		log.Fatalln("GitHub Action Error: Required Input 'rules-path' not provided.")
 	}
-	if ok {
-		log.Println("GitHub Action Info: Running in Validate ALL Mode.")
-		log.Println("GitHub Action Info: All firewall rules will be validated against the GitHub Actor's User Credentials.")
+
+	validateAll, ok := os.LookupEnv("VALIDATE_ALL")
+	validateAllBool, err := strconv.ParseBool(validateAll)
+	if err != nil {
+		log.Fatalln("GitHub Action Error: Required Input 'validate-all' must be 'true' or 'false'. Value: " + validateAll + " is not valid.")
+	} else {
+		if !ok {
+			log.Println("GitHub Action Info: Running in Validate Changes Only Mode.")
+			log.Println("GitHub Action Info: Only firewall rules that have been modified will be validated.")
+		}
+		if ok {
+			log.Println("GitHub Action Info: Running in Validate ALL Mode.")
+			log.Println("GitHub Action Info: All firewall rules will be validated against the GitHub Actor's User Credentials.")
+		}
 	}
 
 	userEmail, ok := os.LookupEnv("USER_EMAIL")
@@ -49,88 +70,85 @@ func main() {
 		log.Fatalln("GitHub Action Error: Required Input 'changed-file-list' not provided.")
 	}
 
-	// Log Out All Variables for Execution Run.
-	log.Println("Absolute Path: " + absolutePath)
-	log.Println("Validate All: " + validateAll)
-	log.Println("GitHub User Email: " + userEmail)
-	log.Println("Changed File List: " + changedFileList)
-
-	// Configure Absolute Path
-	filePath, err := filepath.Abs(fmt.Sprintf("%s%s", absolutePath, filepath.Base(changedFileList)))
-	if err != nil {
-		panic(err)
-		log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")
-		log.Println("Error: CSV File should be located in the Root Directory of your github repository.")
-		log.Fatalln("Technical Error: ", err)
+	config := &ValidatorConfig{
+		absolutePath:    absolutePath,
+		rulesPath:       rulesPath,
+		validateAll:     validateAllBool,
+		userEmail:       userEmail,
+		changedFileList: changedFileList,
 	}
 
-	// Process CSV
-	err = processCSV(filePath)
+	status, err := processRules(config)
 	if err != nil {
-		log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")
-		log.Fatalln("Technical Error: ", err)
+		log.Fatalln("Error: processing firewall rule validation: %w", err)
 	}
 
-	// gcpProjectId, ok := os.LookupEnv("GCP_PROJECT_ID")
-	// if !ok {
-	// 	panic("GCP_PROJECT environment variable is not set")
-	// }
+	_ = status
 
-	// subnetName, ok := os.LookupEnv("SUBNET_NAME")
-	// if !ok {
-	// 	panic("SUBNET_NAME environment variable is not set")
-	// }
-
-	// subnetRegion, ok := os.LookupEnv("SUBNET_REGION")
-	// if !ok {
-	// 	panic("SUBNET_REGION environment variable is not set")
-	// }
-
-	//fmt.Sprintln("Acting User: %s", userEmail)
-
-	// ctx := context.Background()
-	// computeService, err := compute.NewService(ctx)
+	// // Configure Absolute Path
+	// filePath, err := filepath.Abs(fmt.Sprintf("%s%s", absolutePath, filepath.Base(changedFileList)))
 	// if err != nil {
-	// 	log.Fatal(err)
+	// 	panic(err)
+	// 	log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")
+	// 	log.Println("Error: CSV File should be located in the Root Directory of your github repository.")
+	// 	log.Fatalln("Technical Error: ", err)
 	// }
 
-	// // Get the IAM policy for the subnet.
-	// policy, err := computeService.Subnetworks.GetIamPolicy(gcpProjectId, subnetRegion, subnetName).Context(ctx).Do()
+	// // Process CSV
+	// err = processCSV(filePath)
 	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// // Check if the user has the required permission.
-	// hasAccess := false
-	// for _, binding := range policy.Bindings {
-	// 	if approvedRoles[binding.Role] {
-	// 		for _, member := range binding.Members {
-	// 			if fmt.Sprintf("user:%s", userEmail) == member{
-	// 				hasAccess = true
-	// 				break
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	// if hasAccess {
-	// 	fmt.Printf("User: %s has '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName)
-	// } else {
-	// 	fmt.Printf("User: %s does not have '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName)
+	// 	log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")
+	// 	log.Fatalln("Technical Error: ", err)
 	// }
 }
 
-func processCSV(filename string) error {
-	// Check if the file exists
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		return fmt.Errorf("Changed File List CSV file %s does not exist", filename)
+func processRules(c *ValidatorConfig) (status bool, err error) {
+	if c.validateAll {
+		// Validate all Firewall Rules listed in all YAML files within the current Git Commit.
+		c.ruleFiles, err = loadAllRulesFiles(c)
+		if err != nil {
+			return false, fmt.Errorf("Error: reading all firewall rules files: %w", err)
+		}
+	} else {
+		// Validate only Firewall Rules listed in YAML files staged as part of the triggering Git Commit.
+		c.ruleFiles, err = loadStagedRulesFiles(c)
+		if err != nil {
+			return false, fmt.Errorf("Error: reading all changed firewall rules files: %w", err)
+		}
 	}
 
-	// Open the CSV file
-	file, err := os.Open(filename)
+	// Process each YAML File and Validate the rules
+
+	// Return PASS or FAIL Response.
+	return true, nil
+}
+
+func loadAllRulesFiles(c *ValidatorConfig) (files []string, err error) {
+	return files, err
+}
+
+func loadStagedRulesFiles(c *ValidatorConfig) (files []string, err error) {
+
+	// Calculate relative absolute path for changedFileList in relation to GitHub Action
+	path, err := getAbsPath(c.rulesPath, c.changedFileList)
 	if err != nil {
-		return fmt.Errorf("error opening file Changed File List CSV file: %w", err)
+		return files, fmt.Errorf("Error: 'changed file list csv file' Absolute Path cannot be calculated: %w", err)
 	}
+
+	// Check if the file exists
+	err = checkFileExists(path)
+	if err != nil {
+		// Unable to locate the changed files list csv file.
+		return files, fmt.Errorf("Error: 'changed file list csv file' doesn't exist: %w", err)
+	}
+
+	// Open the Changed File List CSV file
+	file, err := os.Open(path)
+	if err != nil {
+		return files, fmt.Errorf("Error: 'changed file list csv file' cannot be opened: %w", err)
+	}
+
+	// File Opened.
 	defer file.Close()
 
 	// Create a CSV reader
@@ -139,16 +157,14 @@ func processCSV(filename string) error {
 	// Check if the file is empty
 	_, err = reader.Read() // Try to read the first record
 	if err == io.EOF {
-		return fmt.Errorf("Changed File List CSV file %s is empty, no rules to process", filename)
+		// File is empty, error
+		return files, fmt.Errorf("Error: 'changed file list csv file' %s is empty, no rules can be process", path)
 	} else if err != nil {
-		return fmt.Errorf("error reading Changed File List CSV file: %w", err)
+		// File can't be read, also error
+		return files, fmt.Errorf("Error: reading 'changed file list csv file': %w", err)
 	}
 
-	// Reset the reader to the beginning of the file
-	_, err = file.Seek(0, 0)
-	if err != nil {
-		return fmt.Errorf("error seeking Changed File List CSV file: %w", err)
-	}
+	// Reset new reader to the restart at the beginning of the file
 	reader = csv.NewReader(file)
 
 	// Read and output each entry on a new line
@@ -158,11 +174,76 @@ func processCSV(filename string) error {
 			break // End of file
 		}
 		if err != nil {
-			return fmt.Errorf("error reading Changed File List CSV file record: %w", err)
+			return files, fmt.Errorf("Error: reading 'changed file list csv file' records: %w", err)
 		}
 
-		fmt.Println(record)
+		log.Println(record)
+		files = append(files, record[0])
 	}
 
+	return files, err
+}
+
+// Configure Absolute Path
+func getAbsPath(path, filename string) (string, error) {
+	outputPath, err := filepath.Abs(fmt.Sprintf("%s%s", path, filepath.Base(filename)))
+	if err != nil {
+		return "", err
+	}
+	return outputPath, nil
+}
+
+func checkFileExists(path string) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return fmt.Errorf("File %s does not exist", path)
+	}
 	return nil
 }
+
+// gcpProjectId, ok := os.LookupEnv("GCP_PROJECT_ID")
+// if !ok {
+// 	panic("GCP_PROJECT environment variable is not set")
+// }
+
+// subnetName, ok := os.LookupEnv("SUBNET_NAME")
+// if !ok {
+// 	panic("SUBNET_NAME environment variable is not set")
+// }
+
+// subnetRegion, ok := os.LookupEnv("SUBNET_REGION")
+// if !ok {
+// 	panic("SUBNET_REGION environment variable is not set")
+// }
+
+//fmt.Sprintln("Acting User: %s", userEmail)
+
+// ctx := context.Background()
+// computeService, err := compute.NewService(ctx)
+// if err != nil {
+// 	log.Fatal(err)
+// }
+
+// // Get the IAM policy for the subnet.
+// policy, err := computeService.Subnetworks.GetIamPolicy(gcpProjectId, subnetRegion, subnetName).Context(ctx).Do()
+// if err != nil {
+// 	log.Fatal(err)
+// }
+
+// // Check if the user has the required permission.
+// hasAccess := false
+// for _, binding := range policy.Bindings {
+// 	if approvedRoles[binding.Role] {
+// 		for _, member := range binding.Members {
+// 			if fmt.Sprintf("user:%s", userEmail) == member{
+// 				hasAccess = true
+// 				break
+// 			}
+// 		}
+// 	}
+// }
+
+// if hasAccess {
+// 	fmt.Printf("User: %s has '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName)
+// } else {
+// 	fmt.Printf("User: %s does not have '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName)
+// }
