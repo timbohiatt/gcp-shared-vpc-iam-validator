@@ -47,16 +47,14 @@ func main() {
 
 	validateAll, ok := os.LookupEnv("VALIDATE_ALL")
 	validateAllBool, err := strconv.ParseBool(validateAll)
-	log.Println("Validate All Flag: ", validateAll)
-	log.Println("Validate All Bool: ", validateAllBool)
 	if err != nil {
 		log.Fatalln("GitHub Action Error: Required Input 'validate-all' must be 'true' or 'false'. Value: " + validateAll + " is not valid.")
 	} else {
-		if !ok {
+		if ok {
 			log.Println("GitHub Action Info: Running in Validate Changes Only Mode.")
 			log.Println("GitHub Action Info: Only firewall rules that have been modified will be validated.")
 		}
-		if ok {
+		if !ok {
 			log.Println("GitHub Action Info: Running in Validate ALL Mode.")
 			log.Println("GitHub Action Info: All firewall rules will be validated against the GitHub Actor's User Credentials.")
 		}
@@ -82,7 +80,7 @@ func main() {
 
 	status, err := processRules(config)
 	if err != nil {
-		log.Fatalln("Error: processing firewall rule validation: %w", err)
+		log.Fatalf("Error: processing firewall rule validation: %w", err)
 	}
 
 	_ = status
@@ -107,12 +105,14 @@ func main() {
 func processRules(c *ValidatorConfig) (status bool, err error) {
 	if c.validateAll {
 		// Validate all Firewall Rules listed in all YAML files within the current Git Commit.
+		log.Println("Info: loading all firewall rules stored in YAML files in current git commit")
 		c.ruleFiles, err = loadAllRulesFiles(c)
 		if err != nil {
 			return false, fmt.Errorf("Error: reading all firewall rules files: %w", err)
 		}
 	} else {
 		// Validate only Firewall Rules listed in YAML files staged as part of the triggering Git Commit.
+		log.Println("Info: loading staged firewall changes based on 'changed file list csv'")
 		c.ruleFiles, err = loadStagedRulesFiles(c)
 		if err != nil {
 			return false, fmt.Errorf("Error: reading all changed firewall rules files: %w", err)
