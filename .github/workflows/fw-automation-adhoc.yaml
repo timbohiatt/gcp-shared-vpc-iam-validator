@@ -100,7 +100,7 @@ jobs:
         id: 'shared-vpc-firewall-rule-automation'  
         uses: ./.github/actions/shared-vpc-firewall-rule-automation 
         with: 
-          person: ${{ steps.get-github-actor-email.outputs.email }}
+          user-email: ${{ steps.get-github-actor-email.outputs.email }}
     
       
 
