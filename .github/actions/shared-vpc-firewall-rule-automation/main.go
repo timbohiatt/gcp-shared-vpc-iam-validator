@@ -24,6 +24,21 @@ func main() {
 		fmt.Println(envVar)
 	}*/
 
+	absolutePath, ok := os.LookupEnv("ABS_PATH")
+	if !ok {
+		log.Fatalln("GitHub Action Error: Required Input 'abs-path' not provided.")
+	}
+
+	validateAll, ok := os.LookupEnv("VALIDATE_ALL")
+	if !ok {
+		log.Println("GitHub Action Info: Running in Validate Changes Only Mode.")
+		log.Println("GitHub Action Info: Only firewall rules that have been modified will be validated.")
+	}
+	if ok {
+		log.Println("GitHub Action Info: Running in Validate ALL Mode.")
+		log.Println("GitHub Action Info: All firewall rules will be validated against the GitHub Actor's User Credentials.")
+	}
+
 	userEmail, ok := os.LookupEnv("USER_EMAIL")
 	if !ok {
 		log.Fatalln("GitHub Action Error: Required Input 'user-email' not provided.")
@@ -34,13 +49,14 @@ func main() {
 		log.Fatalln("GitHub Action Error: Required Input 'changed-file-list' not provided.")
 	}
 
+	// Log Out All Variables for Execution Run.
+	log.Println("Absolute Path: " + absolutePath)
+	log.Println("Validate All: " + validateAll)
 	log.Println("GitHub User Email: " + userEmail)
 	log.Println("Changed File List: " + changedFileList)
 
-	_ = userEmail
-	_ = changedFileList
-
-	filePath, err := filepath.Abs(fmt.Sprintf("../../../%s", filepath.Base(changedFileList)))
+	// Configure Absolute Path
+	filePath, err := filepath.Abs(fmt.Sprintf("%s%s", absolutePath, filepath.Base(changedFileList)))
 	if err != nil {
 		panic(err)
 		log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")
@@ -48,6 +64,7 @@ func main() {
 		log.Fatalln("Technical Error: ", err)
 	}
 
+	// Process CSV
 	err = processCSV(filePath)
 	if err != nil {
 		log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")

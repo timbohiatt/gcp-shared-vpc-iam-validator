@@ -3,6 +3,14 @@ description: Check to see if the user who raises a PR has IAM permissions on a s
 author: Tim Hiatt (timhiatt@google.com)
 
 inputs: 
+  abs-path: 
+    description: Enforce the Validation of all Firewall Rules against GitHub Actor's IAM Bindings
+    required: true 
+    default: "../../../"
+  validate-all: 
+    description: Enforce the Validation of all Firewall Rules against GitHub Actor's IAM Bindings
+    required: true 
+    default: "false"
   user-email: 
     description: GitHub user Email (Should also be GCP User Email)
     required: true
@@ -17,5 +25,7 @@ runs:
   - run: cd ${{github.action_path}} && go run main.go
     shell: bash
     env:
+        ABS_PATH: $({{ inputs.abs-path }})
+        VALIDATE_ALL: ${{ inputs.validate-all }}
         USER_EMAIL: ${{ inputs.user-email }}
         CHANGED_FILE_LIST: ${{ inputs.changed-file-list }}
