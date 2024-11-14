@@ -16,7 +16,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-
   adhoc:
     name: FW Automation - ADHOC Validation
     runs-on: 'ubuntu-latest'
