@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 var approvedRoles = map[string]bool{
@@ -39,7 +40,15 @@ func main() {
 	_ = userEmail
 	_ = changedFileList
 
-	err := processCSV(changedFileList)
+	filePath, err := filepath.Abs(fmt.Sprintf("../../../%s", filepath.Base(changedFileList)))
+	if err != nil {
+		panic(err)
+		log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")
+		log.Println("Error: CSV File should be located in the Root Directory of your github repository.")
+		log.Fatalln("Technical Error: ", err)
+	}
+
+	err = processCSV(filePath)
 	if err != nil {
 		log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")
 		log.Fatalln("Technical Error: ", err)
