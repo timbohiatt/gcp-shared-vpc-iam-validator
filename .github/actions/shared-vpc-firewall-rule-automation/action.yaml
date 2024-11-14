@@ -1,10 +1,16 @@
 name: Google Cloud Shared VPC Subnet IAM Policy Validator
 description: Check to see if the user who raises a PR has IAM permissions on a specific Google Cloud Shared VPC Subnet in a specific Region.
+author: Tim Hiatt (timhiatt@google.com)
+
+inputs: 
+  user-email: 
+    description: GitHub user Email (Should also be GCP User Email)
+    required: true
+    default: ${{github.GITHUB_ACTOR}}
+
 
 runs: 
   using: composite
   steps: 
-  - run: cd ${{github.action_path}} && ls
-    shell: bash  
   - run: cd ${{github.action_path}} && go run main.go
     shell: bash

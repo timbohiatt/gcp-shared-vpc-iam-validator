@@ -81,6 +81,15 @@ jobs:
           cat ./change-files
         working-directory: './'
 
+      - name: Get GitHub Actor Email
+        id: get-github-actor-email
+        uses: evvanErb/get-github-email-by-username-action@v1.25
+        with:
+          github-username: ${{github.GITHUB_ACTOR}}
+     
+      - name: Print the found email
+        run: echo "The email is ${{ steps.get-github-actor-email.outputs.email }}"
+
       - name: 'Set up Go 1.x'
         id: 'go-setup'  
         uses: actions/setup-go@v4
@@ -90,6 +99,8 @@ jobs:
       - name: 'shared-vpc-firewall-rule-automation'
         id: 'shared-vpc-firewall-rule-automation'  
         uses: ./.github/actions/shared-vpc-firewall-rule-automation 
+        with: 
+          user-email: ${{ steps.get-github-actor-email.outputs.email }}
     
       
 
