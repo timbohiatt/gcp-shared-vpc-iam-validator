@@ -47,6 +47,8 @@ func main() {
 
 	validateAll, ok := os.LookupEnv("VALIDATE_ALL")
 	validateAllBool, err := strconv.ParseBool(validateAll)
+	log.Println("Validate All Flag: ", validateAll)
+	log.Println("Validate All Bool: ", validateAllBool)
 	if err != nil {
 		log.Fatalln("GitHub Action Error: Required Input 'validate-all' must be 'true' or 'false'. Value: " + validateAll + " is not valid.")
 	} else {
