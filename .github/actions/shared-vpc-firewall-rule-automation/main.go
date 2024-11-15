@@ -277,7 +277,11 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 		if !result.status {
 			return result
 		}
-
+		
+		log.Println(subnetName)
+		log.Println(subnetRegion)
+		log.Println(destinationRanges)
+		log.Println(sourceRanges)
 		// Staging for Future Testing
 		_ = subnetName
 		_ = subnetRegion
