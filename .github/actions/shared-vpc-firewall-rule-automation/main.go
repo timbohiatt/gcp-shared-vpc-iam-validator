@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
 
 	yaml "gopkg.in/yaml.v2"
@@ -263,6 +264,9 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 				result.errors = append(result.errors, "Firewall Rule (Ingress) Configuration Missing Required Key/Value: destination_ranges")
 			}
 
+			log.Println(reflect.TypeOf(ruleWith["destination_ranges"]))
+			log.Println(ruleWith["destination_ranges"])
+
 			// Validate destination_ranges contain Values
 			if len(ruleWith["destination_ranges"].([]string)) <= 0 {
 				result.status = false
@@ -282,6 +286,9 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing Required Key/Value: source_ranges")
 			}
+
+			log.Println(reflect.TypeOf(ruleWith["source_ranges"]))
+			log.Println(ruleWith["source_ranges"])
 
 			// Validate source_ranges contain Values
 			if len(ruleWith["source_ranges"].([]string)) <= 0 {
