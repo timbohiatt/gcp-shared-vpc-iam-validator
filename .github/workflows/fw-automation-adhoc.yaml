@@ -36,27 +36,27 @@ jobs:
           service_account: '${{ vars.WIF_SA_EMAIL }}'
           access_token_lifetime: 300s
 
-      - name: 'Terraform Format'
-        id: tf-fmt
-        run: terraform fmt
-        working-directory: ./infra/firewall-rule-automation
+      # - name: 'Terraform Format'
+      #   id: tf-fmt
+      #   run: terraform fmt
+      #   working-directory: ./infra/firewall-rule-automation
 
-      - name: 'Terraform Init'
-        id: tf-init
-        run: terraform init -backend-config="bucket=${{ env.TF_BACKEND_BUCKET }}"
-        working-directory: ./infra/firewall-rule-automation
+      # - name: 'Terraform Init'
+      #   id: tf-init
+      #   run: terraform init -backend-config="bucket=${{ env.TF_BACKEND_BUCKET }}"
+      #   working-directory: ./infra/firewall-rule-automation
 
-      - name: 'Terraform Validate'
-        id: tf-validate
-        run: terraform validate -no-color
-        working-directory: ./infra/firewall-rule-automation
+      # - name: 'Terraform Validate'
+      #   id: tf-validate
+      #   run: terraform validate -no-color
+      #   working-directory: ./infra/firewall-rule-automation
 
-      - name: 'Terraform Plan'
-        id: tf-plan
-        #run: terraform plan -no-color -input=false
-        run: terraform plan 
-        working-directory: ./infra/firewall-rule-automation
-        continue-on-error: false
+      # - name: 'Terraform Plan'
+      #   id: tf-plan
+      #   #run: terraform plan -no-color -input=false
+      #   run: terraform plan 
+      #   working-directory: ./infra/firewall-rule-automation
+      #   continue-on-error: false
 
       - name: 'List Changed FW Rules'
         id: list-fw-rule-changes
