@@ -329,7 +329,9 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 			return result
 		}
 
+		// Validate that the Firewall rules contain only source and destination CIDR's that align with the Subnet CIDR's from the configuration
 		invalidCIDRs := checkCIDRRanges(cidrsPendingValidation, subnetCIDRs)
+		log.Println("CIRD's Checked!")
 		for invalidCIDR := range invalidCIDRs {
 			result.status = false
 			if ruleType == "ingress" {
