@@ -34,15 +34,12 @@ type ValidationResults struct {
 }
 
 func (r *ValidationResults) outputResults() {
-	log.Println("============================================================================")
-	log.Println("=============	Firewall Rule Validation Results	================")
-	log.Println("============================================================================")
+	log.Println("\n\n")
+	log.Println(fmt.Sprintf("Firewall Rules Containing Errors: %d", len(r.results)))
 	for _, result := range r.results {
 		result.outputResult()
 		log.Println("\n\n")
 	}
-	log.Println("======================================================================")
-	log.Println("======================================================================")
 }
 
 type ValidationResult struct {
@@ -56,15 +53,15 @@ type ValidationResult struct {
 func (r *ValidationResult) outputResult() {
 	// If Validation Status is not True
 	if !r.status {
-		log.Println("============================================================")
 		log.Println("Firewall Rule Name: ", r.firewallRuleName)
 		log.Println("Firewall Rule File: ", r.file)
 		log.Println("Firewall Rule File Validated: ", r.status)
-		for _, err := range r.errors {
+		log.Println(fmt.Sprintf("Firewall Rule Validation Errors: %d", len(r.errors)))
+		log.Println("Firewall Rule Validation Errors:")
+		for idx, err := range r.errors {
 			// Output Each Validation Error
-			log.Println("\t - Validation Error: ", err)
+			log.Println(fmt.Sprintf("\t [%d] Error: %s", idx+1, err))
 		}
-		log.Println("============================================================")
 	}
 }
 
@@ -257,21 +254,15 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 
 		// Validations Specific to Ingress Rules
 		if ruleType == "ingress" {
-			log.Println("_+_+_+_+_+_+_+_+_+_+")
-			log.Println("_+_+_+_+_+_+_+_+_+_+")
-			log.Println(ruleWith["destination_ranges"])
-			log.Println("_+_+_+_+_+_+_+_+_+_+")
-			log.Println("_+_+_+_+_+_+_+_+_+_+")
 			// Check if Rule has destination_ranges
 			if destinationRanges, ok = ruleWith["destination_ranges"].([]string); !ok {
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Ingress) Configuration Missing Required Key/Value: destination_ranges")
-			} else {
-				log.Println("_+_+_+_+_+_+_+_+_+_+")
-				log.Println("_+_+_+_+_+_+_+_+_+_+")
-				log.Println(ruleWith["destination_ranges"])
-				log.Println("_+_+_+_+_+_+_+_+_+_+")
-				log.Println("_+_+_+_+_+_+_+_+_+_+")
+			}
+
+			// Output the Listed Destination Ranges
+			for idx, ipRange := range destinationRanges {
+				log.Println(fmt.Sprintf("Destination IP range [%d]: %s", idx, ipRange))
 			}
 		}
 
@@ -282,12 +273,17 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing Required Key/Value: source_ranges")
 			}
+
+			// Output the Listed Destination Ranges
+			for idx, ipRange := range sourceRanges {
+				log.Println(fmt.Sprintf("Source IP range [%d]: %s", idx, ipRange))
+			}
 		}
 
-		log.Println(subnetName)
-		log.Println(subnetRegion)
-		log.Println(destinationRanges)
-		log.Println(sourceRanges)
+		// log.Println(subnetName)
+		// log.Println(subnetRegion)
+		// log.Println(destinationRanges)
+		// log.Println(sourceRanges)
 
 		// No Further Validation Possible Without Subnet Name, Region, Ingress/Egress SRC/DST Ranges
 		if !result.status {
