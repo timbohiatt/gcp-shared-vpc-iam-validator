@@ -285,13 +285,13 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 
 		// Validations Specific to Egress Rules
 		if ruleType == "egress" {
-			// Assert if destination_ranges is a string array
-			if destinationRanges, ok := ruleWith["destination_ranges"].([]interface{}); ok {
+			// Assert if source_ranges is a string array
+			if destinationRanges, ok := ruleWith["source_ranges"].([]interface{}); ok {
 
-				// Check that destination_ranges contains values
+				// Check that source_ranges contains values
 				if len(destinationRanges) <= 0 {
 					result.status = false
-					result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'destination_ranges' is empty")
+					result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'source_ranges' is empty")
 				}
 
 				// Collect Up CIDRs for Subnet Validation
