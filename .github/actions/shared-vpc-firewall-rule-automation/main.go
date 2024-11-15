@@ -333,7 +333,6 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 			} else {
 				result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) '%s' configuration contains a source_ranges entry: '%s' CIDR that is not part of the firewall rules Primary or Secondary subnet CIDR ranges; Invalid ", ruleType, ruleName, invalidCIDR))
 			}
-			return result
 		}
 
 		// Validate the GitHub Actor has permissions to Operate on that Subnet
