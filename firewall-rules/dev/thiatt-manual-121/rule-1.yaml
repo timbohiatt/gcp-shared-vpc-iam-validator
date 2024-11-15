@@ -19,7 +19,7 @@ ingress:
     source_ranges:
       - 0.0.0.0/0
     destination_ranges:
-      - 10.0.0.2/32
+      - 172.0.0.2/32
     rules:
       - protocol: tcp
         ports:
