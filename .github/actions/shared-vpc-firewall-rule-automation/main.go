@@ -95,8 +95,6 @@ func main() {
 
 	validateAll, ok := os.LookupEnv("VALIDATE_ALL")
 	validateAllBool, err := strconv.ParseBool(validateAll)
-	log.Println(validateAllBool)
-	log.Println(validateAll)
 	if err != nil {
 		log.Fatalln("GitHub Action Error: Required Input 'validate-all' must be 'true' or 'false'. Value: " + validateAll + " is not valid.")
 	} else {
@@ -105,7 +103,6 @@ func main() {
 			log.Println("Info: Only firewall rules that have been modified will be validated.")
 		}
 		if !ok {
-			log.Println("YO YO YO YO YO!")
 			log.Println("Info: Running in Validate ALL Mode.")
 			log.Println("Info: All firewall rules will be validated against the GitHub Actor's User Credentials.")
 		}
@@ -169,7 +166,6 @@ func main() {
 
 func calculateRuleFiles(c *ValidatorConfig) (status bool, err error) {
 	if c.validateAll {
-		log.Println("We are Here option #1")
 		// Validate all Firewall Rules listed in all YAML files within the current Git branch.
 		log.Println("Info: loading all firewall rules stored in YAML files in current branch")
 		c.ruleFiles, err = loadAllRulesFiles(c)
@@ -177,7 +173,6 @@ func calculateRuleFiles(c *ValidatorConfig) (status bool, err error) {
 			return false, fmt.Errorf("Error: reading all firewall rules files: %w", err)
 		}
 	} else {
-		log.Println("We are Here option #2")
 		// Validate only Firewall Rules listed in YAML files staged as part of the triggering Git Commit.
 		log.Println("Info: loading staged firewall changes based on 'changed file list csv'")
 		c.ruleFiles, err = loadStagedRulesFiles(c)
@@ -219,8 +214,8 @@ func processRules(c *ValidatorConfig) (status bool, results ValidationResults, e
 
 		// validate rule contains destination_range (ingress)
 		// validate rule contains source_range (egress)
-		// validate rule contains subnet name
-		// validate rule contains subnet region
+		// DONE - validate rule contains subnet name
+		// DONE - validate rule contains subnet region
 		// validate subnet in region exists
 		// get all subnet ip cidrs
 		// validate source_range or destination_range in rule within subnet ip cidr
@@ -242,21 +237,57 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 
 	if ruleWith, ok := rule.(map[interface{}]interface{}); ok {
 
+		// Declare Values
+		var subnetName string
+		var subnetRegion string
+		var destinationRanges []string
+		var sourceRanges []string
+
 		// Check if Rule has Subnet Name
-		if subnetName, ok := ruleWith["subnet_name"].(string); ok {
-			fmt.Println("Subnet Name:", subnetName)
-		} else {
+		if subnetName, ok = ruleWith["subnet_name"].(string); !ok {
 			result.status = false
 			result.errors = append(result.errors, "Firewall Rule Configuration Missing Key/Value: subnet_name")
 		}
 
 		// Check if Rule has Subnet Region
-		if subnetName, ok := ruleWith["subnet_region"].(string); ok {
-			fmt.Println("Subnet Region:", subnetName)
-		} else {
+		if subnetRegion, ok = ruleWith["subnet_region"].(string); !ok {
 			result.status = false
 			result.errors = append(result.errors, "Firewall Rule Configuration Missing Key/Value: subnet_region")
 		}
+
+		// No Further Validation Possible Without Subnet Name & Region
+		if !result.status {
+			return result
+		}
+
+		// Validations Specific to Ingress Rules
+		if ruleType == "ingress" {
+			// Check if Rule has destination_ranges
+			if destinationRanges, ok = ruleWith["destination_ranges"].([]string); !ok {
+				result.status = false
+				result.errors = append(result.errors, "Firewall Rule (Ingress) Configuration Missing Required Key/Value: destination_ranges")
+			}
+		}
+
+		// Validations Specific to Egress Rules
+		if ruleType == "egress" {
+			// Check if Rule has destination_ranges
+			if sourceRanges, ok = ruleWith["source_ranges"].([]string); !ok {
+				result.status = false
+				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing Required Key/Value: source_ranges")
+			}
+		}
+
+		// No Further Validation Possible Without Ingress/Egress SRC/DST Filters
+		if !result.status {
+			return result
+		}
+
+		// Staging for Future Testing
+		_ = subnetName
+		_ = subnetRegion
+		_ = destinationRanges
+		_ = sourceRanges
 
 	}
 
