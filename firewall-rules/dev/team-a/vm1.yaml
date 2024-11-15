@@ -11,7 +11,7 @@ ingress:
     rules:
       - protocol: tcp
         ports:
-          - 80
+          - 81
 egress:
   team-a-allow-tcp-outbound-3000-vm1:
     subnet_name: "team-a"
