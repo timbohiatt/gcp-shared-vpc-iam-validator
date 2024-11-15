@@ -1,0 +1,41 @@
+---
+ingress:
+  allow-tcp-inbound-80-vm1:
+    subnet_name: "shared-vpc-demo-team2-europe-west3"
+    subnet_region: "europe-west3"
+    description: "Allow ingress traffic to vm1 on port 80"
+    source_ranges:
+      - 0.0.0.0/0
+    destination_ranges:
+      - 10.0.0.1/32
+    rules:
+      - protocol: tcp
+        ports:
+          - 80
+  allow-tcp-inbound-80-vm2:
+    subnet_name: "shared-vpc-demo-team2-europe-west3"
+    subnet_region: "europe-west3"
+    description: "Allow ingress traffic to vm2 on port 80"
+    source_ranges:
+      - 0.0.0.0/0
+    destination_ranges:
+      - 10.0.0.2/32
+    rules:
+      - protocol: tcp
+        ports:
+          - 80
+  allow-tcp-inbound-5000-vmAll:
+    subnet_name: "shared-vpc-demo-team2-europe-west3"
+    subnet_region: "europe-west3"
+    description: "Allow ingress traffic to vm1 and 2 on port 5000"
+    source_ranges:
+      - 0.0.0.0/0
+    destination_ranges:
+      - 10.0.0.0/29
+      - 10.0.0.8/29
+      - 10.0.0.16/28
+      - 10.0.0.32/27
+    rules:
+      - protocol: tcp
+        ports:
+          - 5000
