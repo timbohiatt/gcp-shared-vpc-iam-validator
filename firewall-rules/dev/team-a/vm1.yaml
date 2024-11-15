@@ -1,7 +1,7 @@
 ---
 ingress:
   team-a-allow-tcp-inbound-80-vm1:
-    subnet_name: "team-a"
+    subnet_name: "team-b"
     subnet_region: "europe-west3"
     description: "Allow ingress traffic to vms on port 80"
     source_ranges:
