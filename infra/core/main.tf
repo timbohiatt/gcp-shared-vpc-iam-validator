@@ -14,8 +14,8 @@ locals {
   config = {
     env            = "dev"
     prefix         = "svfw-auto"
-    project_id     = "thiatt-manual-121"
-    project_number = "1065220771263"
+    project_id     = "thiatt-manual-124"
+    project_number = "485538517028"
     services = [
       "compute.googleapis.com",
       "networkservices.googleapis.com",
