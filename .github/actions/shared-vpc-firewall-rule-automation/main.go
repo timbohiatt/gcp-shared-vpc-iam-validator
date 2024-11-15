@@ -513,12 +513,15 @@ func getGoogleCloudVPCSubnetCIDRs(projectName string, region string, subnetName 
 	computeService, err := compute.NewService(ctx)
 	if err != nil {
 		// Unable to create a GCP Compute Service
+		log.Println(err)
 		return nil, err
 	}
 
 	// Lookup the subnet in Google Cloud
 	subnet, err := computeService.Subnetworks.Get(projectName, region, subnetName).Do()
 	if err != nil {
+		// Unable to locate the subnet
+		log.Println(err)
 		return nil, err
 	}
 
