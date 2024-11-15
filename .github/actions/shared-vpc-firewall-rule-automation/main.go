@@ -62,13 +62,15 @@ func (r *ValidationResult) outputResult() {
 		log.Println("  - Source File: ", r.file)
 		log.Println("  - Rule Type : ", r.ruleType)
 		log.Println("  - Rule Valid? : ", r.status)
-		log.Println("  - Error Count: %d", len(r.errors))
+		log.Println(fmt.Sprintf("  - Error Count: %d", len(r.errors)))
 		log.Println()
 		log.Println("Validation Errors:")
 		for idx, err := range r.errors {
 			// Output Each Validation Error
 			log.Println(fmt.Sprintf("\t [%d] Error: %s", idx+1, err))
 		}
+		log.Println()
+		log.Println()
 	}
 }
 
