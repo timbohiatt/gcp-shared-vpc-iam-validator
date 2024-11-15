@@ -38,6 +38,13 @@ type ValidationResults struct {
 	results []*ValidationResult
 }
 
+func (r *ValidationResults) pass() bool {
+	if len(r.results) > 0 {
+		return false
+	}
+	return true
+}
+
 func (r *ValidationResults) outputResults() {
 	log.Println()
 	log.Println()
@@ -88,14 +95,6 @@ type FirewallRuleFile struct {
 }
 
 func main() {
-
-	// // Get all environment variables
-	// envVars := os.Environ()
-
-	// // Iterate over the slice and print each variable
-	// for _, envVar := range envVars {
-	// 	fmt.Println(envVar)
-	// }
 
 	absolutePath, ok := os.LookupEnv("ABS_PATH")
 	if !ok {
@@ -165,23 +164,15 @@ func main() {
 		log.Fatalln("Error: processing firewall rule validation: ", err)
 	}
 
+	// Output Results
 	results.outputResults()
 
-	// // Configure Absolute Path
-	// filePath, err := filepath.Abs(fmt.Sprintf("%s%s", absolutePath, filepath.Base(changedFileList)))
-	// if err != nil {
-	// 	panic(err)
-	// 	log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")
-	// 	log.Println("Error: CSV File should be located in the Root Directory of your github repository.")
-	// 	log.Fatalln("Technical Error: ", err)
-	// }
+	// If Errors Exist Exit the Action
+	if !results.pass() {
+		log.Fatalln("Error: GitHub Action FAILS Validation: ", err)
+	}
 
-	// // Process CSV
-	// err = processCSV(filePath)
-	// if err != nil {
-	// 	log.Println("Error: Unable to Process the CSV file containing the list of changed firewall definition files.")
-	// 	log.Fatalln("Technical Error: ", err)
-	// }
+	return
 }
 
 func calculateRuleFiles(c *ValidatorConfig) (status bool, err error) {
