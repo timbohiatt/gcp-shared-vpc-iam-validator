@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strconv"
 
 	yaml "gopkg.in/yaml.v2"
@@ -264,19 +263,22 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 				result.errors = append(result.errors, "Firewall Rule (Ingress) Configuration Missing Required Key/Value: destination_ranges")
 			}
 
-			log.Println(reflect.TypeOf(ruleWith["destination_ranges"]))
-			log.Println(ruleWith["destination_ranges"])
-
-			// Validate destination_ranges contain Values
-			if len(ruleWith["destination_ranges"].([]string)) <= 0 {
-				result.status = false
-				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'destination_ranges' is empty")
+			if destinationRanges, ok := ruleWith["destination_ranges"].([]interface{}); ok {
+				for _, cidr := range destinationRanges {
+					log.Println(cidr)
+				}
 			}
 
-			// Output the Listed Destination Ranges
-			for idx, ipRange := range ruleWith["destination_ranges"].([]string) {
-				log.Println(fmt.Sprintf("Destination IP range [%d]: %s", idx, ipRange))
-			}
+			// // Validate destination_ranges contain Values
+			// if len(ruleWith["destination_ranges"].([]string)) <= 0 {
+			// 	result.status = false
+			// 	result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'destination_ranges' is empty")
+			// }
+
+			// // Output the Listed Destination Ranges
+			// for idx, ipRange := range ruleWith["destination_ranges"].([]string) {
+			// 	log.Println(fmt.Sprintf("Destination IP range [%d]: %s", idx, ipRange))
+			// }
 		}
 
 		// Validations Specific to Egress Rules
@@ -287,19 +289,22 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing Required Key/Value: source_ranges")
 			}
 
-			log.Println(reflect.TypeOf(ruleWith["source_ranges"]))
-			log.Println(ruleWith["source_ranges"])
-
-			// Validate source_ranges contain Values
-			if len(ruleWith["source_ranges"].([]string)) <= 0 {
-				result.status = false
-				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'source_ranges' is empty")
+			if sourceRanges, ok := ruleWith["source_ranges"].([]interface{}); ok {
+				for _, cidr := range sourceRanges {
+					log.Println(cidr)
+				}
 			}
 
-			// Output the Listed Destination Ranges
-			for idx, ipRange := range ruleWith["source_ranges"].([]string) {
-				log.Println(fmt.Sprintf("Source IP range [%d]: %s", idx, ipRange))
-			}
+			// // Validate source_ranges contain Values
+			// if len(ruleWith["source_ranges"].([]string)) <= 0 {
+			// 	result.status = false
+			// 	result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'source_ranges' is empty")
+			// }
+
+			// // Output the Listed Destination Ranges
+			// for idx, ipRange := range ruleWith["source_ranges"].([]string) {
+			// 	log.Println(fmt.Sprintf("Source IP range [%d]: %s", idx, ipRange))
+			// }
 		}
 
 		// log.Println(subnetName)
