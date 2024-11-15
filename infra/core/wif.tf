@@ -51,3 +51,8 @@ resource "google_iam_workload_identity_pool_provider" "wif_pool_github_provider"
 
 # WIF Service account IAM Bindings 
 
+resource "google_project_iam_member" "wif_sa_network_admin" {
+  project                            = local.config.project_id
+  role    = "roles/compute.networkAdmin"
+  member  = "serviceAccount:${google_service_account.wif_service_account.email}"
+}
