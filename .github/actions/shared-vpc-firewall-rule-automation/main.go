@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"log"
+	"net"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -253,8 +254,6 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 		var subnetName string
 		var subnetRegion string
 		var cidrsPendingValidation []string
-		//var destinationRanges []string
-		//var sourceRanges []string
 
 		// Check if Rule has Subnet Name
 		if subnetName, ok = ruleWith["subnet_name"].(string); !ok {
@@ -270,12 +269,6 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 
 		// Validations Specific to Ingress Rules
 		if ruleType == "ingress" {
-			// // Assert if Rule has destination_ranges
-			// if _, ok = ruleWith["destination_ranges"].([]string); !ok {
-			// 	result.status = false
-			// 	result.errors = append(result.errors, "Firewall Rule (Ingress) Configuration Missing Required Key/Value: destination_ranges")
-			// }
-
 			// Assert if destination_ranges is a string array
 			if destinationRanges, ok := ruleWith["destination_ranges"].([]interface{}); ok {
 
@@ -297,12 +290,6 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 
 		// Validations Specific to Egress Rules
 		if ruleType == "egress" {
-			// // Assert if Rule has destination_ranges
-			// if _, ok = ruleWith["source_ranges"].([]string); !ok {
-			// 	result.status = false
-			// 	result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing Required Key/Value: source_ranges")
-			// }
-
 			// Assert if destination_ranges is a string array
 			if destinationRanges, ok := ruleWith["destination_ranges"].([]interface{}); ok {
 
@@ -327,17 +314,34 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 			return result
 		}
 
-		// Get Subnet IP Ranges
-		cidrs, err := getGoogleCloudVPCSubnetCIDRs(c.hostNetworkProject, subnetRegion, subnetName)
+		// Get Subnet IP Ranges & Confirm Subnets existance
+		subnetCIDRs, err := getGoogleCloudVPCSubnetCIDRs(c.hostNetworkProject, subnetRegion, subnetName)
 		if err != nil {
-			log.Println(err)
+			result.status = false
+			result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) Configuration Contains Incompatible subnet_name = '%s', subnet_region = '%s' & host_network_project = '%s' values: subnet not found", subnetName, subnetRegion, c.hostNetworkProject, ruleType))
 			return result
 		}
-		_ = cidrs
 
-		if !result.status {
+		// Ensure at least One CIDR is Valid
+		if len(subnetCIDRs) <= 0 {
+			result.status = false
+			result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) Configuration contains a Subnet with no CIDR ranges; Invalid", ruleType))
 			return result
 		}
+
+		invalidCIDRs := checkCIDRRanges(cidrsPendingValidation, subnetCIDRs)
+		for invalidCIDR := range invalidCIDRs {
+			result.status = false
+			if ruleType == "ingress" {
+				result.errors = append(result.errors, fmt.Sprintf("Firewall Rule configuration contains a destination_ranges entry: '%s' CIDR that is not part of the firewall rules Primary or Secondary subnet CIDR ranges; Invalid ", ruleType, invalidCIDR))
+			} else {
+				result.errors = append(result.errors, fmt.Sprintf("Firewall Rule configuration contains a source_ranges entry: '%s' CIDR that is not part of the firewall rules Primary or Secondary subnet CIDR ranges; Invalid ", ruleType, invalidCIDR))
+			}
+			return result
+		}
+
+		// Return Now!
+		return result
 
 	}
 
@@ -509,52 +513,9 @@ import (
 	"net"
 )
 
-// checkCIDRRanges takes two string arrays of CIDR ranges, listA and listB,
-// and returns a new string array containing the CIDR ranges from listA that
-// do not fit entirely within any CIDR range in listB.
-func checkCIDRRanges(listA, listB []string) []string {
-	failedRanges := []string{}
 
-	for _, cidrA := range listA {
-		_, ipNetA, err := net.ParseCIDR(cidrA)
-		if err != nil {
-			// Handle parsing error if necessary
-			fmt.Printf("Error parsing CIDR %s: %v\n", cidrA, err)
-			continue
-		}
 
-		found := false
-		for _, cidrB := range listB {
-			_, ipNetB, err := net.ParseCIDR(cidrB)
-			if err != nil {
-				// Handle parsing error if necessary
-				fmt.Printf("Error parsing CIDR %s: %v\n", cidrB, err)
-				continue
-			}
 
-			if ipNetB.Contains(ipNetA.IP) && ipNetB.Contains(lastIP(ipNetA)) {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			failedRanges = append(failedRanges, cidrA)
-		}
-	}
-
-	return failedRanges
-}
-
-// lastIP calculates the last IP in a given IP network.
-func lastIP(n *net.IPNet) net.IP {
-	ip := make(net.IP, len(n.IP.To4()))
-	copy(ip, n.IP.To4())
-	for i := 0; i < len(ip); i++ {
-		ip[i] |= ^n.Mask[i]
-	}
-	return ip
-}
 
 func main() {
 	// Example usage
@@ -576,59 +537,78 @@ func main() {
 */
 
 func getGoogleCloudVPCSubnetCIDRs(projectName string, region string, subnetName string) ([]string, error) {
-	log.Println("Checking Subnets...")
 	// Create a new compute client.
 	ctx := context.Background()
 	computeService, err := compute.NewService(ctx)
 	if err != nil {
+		// Unable to create a GCP Compute Service
 		return nil, err
 	}
 
-	//subnet := computeService.Subnetworks.Get(projectName, region, subnetName)
-
+	// Lookup the subnet in Google Cloud
 	subnet, err := computeService.Subnetworks.Get(projectName, region, subnetName).Do()
 	if err != nil {
 		return nil, err
 	}
 
-	// Access the primary CIDR range
-	primaryCIDR := subnet.IpCidrRange
+	// Define an Empty List os CIDRs
+	var cidrRanges = []string{}
 
-	// Access the secondary CIDR ranges
-	secondaryCIDRs := make([]string, 0)
-	for _, secondaryRange := range subnet.SecondaryIpRanges {
-		secondaryCIDRs = append(secondaryCIDRs, secondaryRange.IpCidrRange)
+	// Collect and store the subnet's primary CIDR range
+	if subnet.IpCidrRange != "" {
+		cidrRanges = append(cidrRanges, subnet.IpCidrRange)
 	}
 
-	// Print the results
-	fmt.Println("Primary CIDR:", primaryCIDR)
-	fmt.Println("Secondary CIDRs:", secondaryCIDRs)
-
-	// _ = computeService
-
-	// c, err := compute.NewSubnetworksRESTClient(ctx, option.WithCredentialsFile("/path/to/your/credentials.json"))
-	// if err != nil {
-	// 	return nil, fmt.Errorf("NewInstancesRESTClient: %w", err)
-	// }
-	// defer c.Close()
-
-	// // Get the subnet.
-	// req := &computepb.GetSubnetworkRequest{
-	// 	Project:    projectName,
-	// 	Region:     region,
-	// 	Subnetwork: subnetName,
-	// }
-	// subnet, err := c.Get(ctx, req)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("unable to get subnet: %w", err)
-	// }
-
-	// // Extract the CIDR ranges.
-	// cidrRanges := []string{subnet.GetIpCidrRange()}
-	// for _, secondaryRange := range subnet.GetSecondaryIpRanges() {
-	// 	cidrRanges = append(cidrRanges, secondaryRange.GetIpCidrRange())
-	// }
-
-	var cidrRanges = []string{}
+	// Collect and store the subnet's secondary CIDR ranges
+	for _, secondaryRange := range subnet.SecondaryIpRanges {
+		cidrRanges = append(cidrRanges, secondaryRange.IpCidrRange)
+	}
 	return cidrRanges, nil
+}
+
+// lastIP calculates the last IP in a given IP network.
+func lastIP(n *net.IPNet) net.IP {
+	ip := make(net.IP, len(n.IP.To4()))
+	copy(ip, n.IP.To4())
+	for i := 0; i < len(ip); i++ {
+		ip[i] |= ^n.Mask[i]
+	}
+	return ip
+}
+
+// checkCIDRRanges takes two string arrays of CIDR ranges, listA and listB,
+// and returns a new string array containing the CIDR ranges from listA that
+// do not fit entirely within any CIDR range in listB.
+func checkCIDRRanges(ruleCIDRs, subnetCIDRs []string) []string {
+	failedRanges := []string{}
+
+	for _, cidrA := range ruleCIDRs {
+		_, ipNetA, err := net.ParseCIDR(cidrA)
+		if err != nil {
+			// Handle parsing error if necessary
+			fmt.Printf("Error parsing CIDR %s: %v\n", cidrA, err)
+			continue
+		}
+
+		found := false
+		for _, cidrB := range subnetCIDRs {
+			_, ipNetB, err := net.ParseCIDR(cidrB)
+			if err != nil {
+				// Handle parsing error if necessary
+				fmt.Printf("Error parsing CIDR %s: %v\n", cidrB, err)
+				continue
+			}
+
+			if ipNetB.Contains(ipNetA.IP) && ipNetB.Contains(lastIP(ipNetA)) {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			failedRanges = append(failedRanges, cidrA)
+		}
+	}
+
+	return failedRanges
 }
