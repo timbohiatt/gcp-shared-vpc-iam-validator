@@ -41,12 +41,19 @@ type ValidationResults struct {
 func (r *ValidationResults) outputResults() {
 	log.Println()
 	log.Println()
-	log.Println(fmt.Sprintf("Firewall Rules Containing Errors: %d", len(r.results)))
-	for _, result := range r.results {
-		log.Println()
-		log.Println()
-		result.outputResult()
+	if len(r.results) > 0 {
+
+		log.Println(fmt.Sprintf("Firewall Rules Containing Errors: %d", len(r.results)))
+		for _, result := range r.results {
+			log.Println()
+			log.Println()
+			result.outputResult()
+		}
+	} else {
+		log.Println("No Firewall Rules Containing Errors were found.")
+		log.Println("Provided Terraform is Valid Firewall Rules Will be Applied.")
 	}
+
 }
 
 type ValidationResult struct {
@@ -216,22 +223,28 @@ func processRules(c *ValidatorConfig) (status bool, results ValidationResults, e
 		// Validate Ingress Rules
 		for ruleName, ruleValue := range fwRuleFile.IngressRules {
 			// Process each Ingress Rule
-			results.results = append(results.results, validateRule(c, "ingress", filePath, ruleName, ruleValue))
+			result := validateRule(c, "ingress", filePath, ruleName, ruleValue)
+			if len(result.errors) >= 1 {
+				results.results = append(results.results, result)
+			}
 		}
 
 		// Validate Egress Rules
 		for ruleName, ruleValue := range fwRuleFile.EgressRules {
 			// Process Each Egress Rule
-			results.results = append(results.results, validateRule(c, "egress", filePath, ruleName, ruleValue))
+			result := validateRule(c, "egress", filePath, ruleName, ruleValue)
+			if len(result.errors) >= 1 {
+				results.results = append(results.results, result)
+			}
 		}
 
-		// validate rule contains destination_range (ingress)
-		// validate rule contains source_range (egress)
+		// DONE - validate rule contains destination_range (ingress)
+		// DONE - validate rule contains source_range (egress)
 		// DONE - validate rule contains subnet name
 		// DONE - validate rule contains subnet region
-		// validate subnet in region exists
-		// get all subnet ip cidrs
-		// validate source_range or destination_range in rule within subnet ip cidr
+		// DONE - validate subnet in region exists
+		// DONE - get all subnet ip cidrs
+		// DONE - validate source_range or destination_range in rule within subnet ip cidr
 		// validate github actor has roles on subnet
 	}
 
