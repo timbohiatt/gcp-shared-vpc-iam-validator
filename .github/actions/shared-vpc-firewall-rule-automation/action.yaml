@@ -3,6 +3,9 @@ description: Check to see if the user who raises a PR has IAM permissions on a s
 author: Tim Hiatt (timhiatt@google.com)
 
 inputs: 
+  gcp-host-network-project: 
+    description: The GCP Project ID that is the Host Project for the Shared VPC
+    required: true 
   abs-path: 
     description: The Absolute path of the GitHub Action relative to the root of the GitHub Repo
     required: true 
@@ -29,6 +32,7 @@ runs:
   - run: cd ${{github.action_path}} && go run main.go
     shell: bash
     env:
+        GCP_HOST_NETWORK_PROJECT: ${{ inputs.gcp-host-network-project }}
         ABS_PATH: ${{ inputs.abs-path }}
         RULES_PATH: ${{ inputs.rules-path }}
         VALIDATE_ALL: ${{ inputs.validate-all }}

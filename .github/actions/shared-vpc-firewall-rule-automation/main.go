@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -10,6 +11,8 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+
+	compute "google.golang.org/api/compute/v1"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -21,12 +24,13 @@ var approvedRoles = map[string]bool{
 
 // ValidatorConfig ...
 type ValidatorConfig struct {
-	absolutePath    string
-	rulesPath       string
-	validateAll     bool
-	userEmail       string
-	ruleFiles       []string
-	changedFileList string
+	hostNetworkProject string
+	absolutePath       string
+	rulesPath          string
+	validateAll        bool
+	userEmail          string
+	ruleFiles          []string
+	changedFileList    string
 }
 
 type ValidationResults struct {
@@ -118,12 +122,18 @@ func main() {
 		log.Fatalln("GitHub Action Error: Required Input 'changed-file-list' not provided.")
 	}
 
+	hostNetworkProject, ok := os.LookupEnv("GCP_HOST_NETWORK_PROJECT")
+	if !ok {
+		log.Fatalln("GitHub Action Error: Required Input 'gcp-host-network-project' not provided.")
+	}
+
 	config := &ValidatorConfig{
-		absolutePath:    absolutePath,
-		rulesPath:       rulesPath,
-		validateAll:     validateAllBool,
-		userEmail:       userEmail,
-		changedFileList: changedFileList,
+		hostNetworkProject: hostNetworkProject,
+		absolutePath:       absolutePath,
+		rulesPath:          rulesPath,
+		validateAll:        validateAllBool,
+		userEmail:          userEmail,
+		changedFileList:    changedFileList,
 	}
 
 	// Calculate List of YAML Files containing Firewall Rules that need to be processed
@@ -203,13 +213,13 @@ func processRules(c *ValidatorConfig) (status bool, results ValidationResults, e
 		// Validate Ingress Rules
 		for ruleName, ruleValue := range fwRuleFile.IngressRules {
 			// Process each Ingress Rule
-			results.results = append(results.results, validateRule("ingress", filePath, ruleName, ruleValue))
+			results.results = append(results.results, validateRule(c, "ingress", filePath, ruleName, ruleValue))
 		}
 
 		// Validate Egress Rules
 		for ruleName, ruleValue := range fwRuleFile.EgressRules {
 			// Process Each Egress Rule
-			results.results = append(results.results, validateRule("egress", filePath, ruleName, ruleValue))
+			results.results = append(results.results, validateRule(c, "egress", filePath, ruleName, ruleValue))
 		}
 
 		// validate rule contains destination_range (ingress)
@@ -226,7 +236,7 @@ func processRules(c *ValidatorConfig) (status bool, results ValidationResults, e
 	return true, results, nil
 }
 
-func validateRule(ruleType, filePath, ruleName string, rule interface{}) *ValidationResult {
+func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule interface{}) *ValidationResult {
 
 	result := &ValidationResult{
 		file:             filePath,
@@ -309,11 +319,15 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 			return result
 		}
 
-		// Staging for Future Testing
-		_ = subnetName
-		_ = subnetRegion
-		//_ = destinationRanges
-		//_ = sourceRanges
+		// Get Subnet IP Ranges
+		cidrs, err := getGoogleCloudVPCSubnetCIDRs(c.hostNetworkProject, subnetRegion, subnetName)
+		if err != nil {
+			log.Println("Error with Subnets...")
+			log.Println(err)
+			return result
+		}
+		log.Println("Did something with  Subnets...")
+		_ = cidrs
 
 	}
 
@@ -550,3 +564,45 @@ func main() {
 
 
 */
+
+func getGoogleCloudVPCSubnetCIDRs(projectName string, region string, subnetName string) ([]string, error) {
+	log.Println("Checking Subnets...")
+	// Create a new compute client.
+	ctx := context.Background()
+	computeService, err := compute.NewService(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	subnet := computeService.Subnetworks.Get(projectName, region, subnetName)
+	_ = subnet
+
+	log.Println(subnet)
+	// _ = computeService
+
+	// c, err := compute.NewSubnetworksRESTClient(ctx, option.WithCredentialsFile("/path/to/your/credentials.json"))
+	// if err != nil {
+	// 	return nil, fmt.Errorf("NewInstancesRESTClient: %w", err)
+	// }
+	// defer c.Close()
+
+	// // Get the subnet.
+	// req := &computepb.GetSubnetworkRequest{
+	// 	Project:    projectName,
+	// 	Region:     region,
+	// 	Subnetwork: subnetName,
+	// }
+	// subnet, err := c.Get(ctx, req)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("unable to get subnet: %w", err)
+	// }
+
+	// // Extract the CIDR ranges.
+	// cidrRanges := []string{subnet.GetIpCidrRange()}
+	// for _, secondaryRange := range subnet.GetSecondaryIpRanges() {
+	// 	cidrRanges = append(cidrRanges, secondaryRange.GetIpCidrRange())
+	// }
+
+	var cidrRanges = []string{}
+	return cidrRanges, nil
+}

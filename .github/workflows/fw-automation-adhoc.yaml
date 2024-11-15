@@ -93,6 +93,7 @@ jobs:
         id: 'shared-vpc-firewall-rule-automation'  
         uses: ./.github/actions/shared-vpc-firewall-rule-automation 
         with: 
+          gcp-host-network-project: 'thiatt-manual-121'
           user-email: ${{ steps.get-github-actor-email.outputs.email }}
           changed-file-list: '${{ env.CHANGED_FILE_LIST }}'
     
