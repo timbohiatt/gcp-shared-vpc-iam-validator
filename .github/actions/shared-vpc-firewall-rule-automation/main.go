@@ -169,7 +169,7 @@ func main() {
 
 	// If Errors Exist Exit the Action
 	if !results.pass() {
-		log.Fatalln("Error: GitHub Action FAILS Validation: ", err)
+		log.Fatalln("\n\nError: GitHub Action FAILS Validation")
 	}
 
 	return
@@ -228,15 +228,6 @@ func processRules(c *ValidatorConfig) (status bool, results ValidationResults, e
 				results.results = append(results.results, result)
 			}
 		}
-
-		// DONE - validate rule contains destination_range (ingress)
-		// DONE - validate rule contains source_range (egress)
-		// DONE - validate rule contains subnet name
-		// DONE - validate rule contains subnet region
-		// DONE - validate subnet in region exists
-		// DONE - get all subnet ip cidrs
-		// DONE - validate source_range or destination_range in rule within subnet ip cidr
-		// validate github actor has roles on subnet
 	}
 
 	// Return PASS or FAIL Response.
@@ -345,6 +336,13 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 			return result
 		}
 
+		// Validate the GitHub Actor has permissions to Operate on that Subnet
+		access := validateGitHubActorsSubnetIAMBindings(c.userEmail, c.hostNetworkProject, subnetRegion, subnetName)
+		if !access {
+			result.status = false
+			result.errors = append(result.errors, fmt.Sprintf("User: %s does not have Network User or Higher IAM Permissions on Subnet: %s within the Shared VPC at the time of validation", c.userEmail))
+			return result
+		}
 		// Return Now!
 		return result
 
@@ -478,37 +476,6 @@ func checkFileExists(path string) error {
 
 //fmt.Sprintln("Acting User: %s", userEmail)
 
-// ctx := context.Background()
-// computeService, err := compute.NewService(ctx)
-// if err != nil {
-// 	log.Fatal(err)
-// }
-
-// // Get the IAM policy for the subnet.
-// policy, err := computeService.Subnetworks.GetIamPolicy(gcpProjectId, subnetRegion, subnetName).Context(ctx).Do()
-// if err != nil {
-// 	log.Fatal(err)
-// }
-
-// // Check if the user has the required permission.
-// hasAccess := false
-// for _, binding := range policy.Bindings {
-// 	if approvedRoles[binding.Role] {
-// 		for _, member := range binding.Members {
-// 			if fmt.Sprintf("user:%s", userEmail) == member{
-// 				hasAccess = true
-// 				break
-// 			}
-// 		}
-// 	}
-// }
-
-// if hasAccess {
-// 	fmt.Printf("User: %s has '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName)
-// } else {
-// 	fmt.Printf("User: %s does not have '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName)
-// }
-
 /*
 
 package main
@@ -569,6 +536,42 @@ func getGoogleCloudVPCSubnetCIDRs(projectName string, region string, subnetName 
 		cidrRanges = append(cidrRanges, secondaryRange.IpCidrRange)
 	}
 	return cidrRanges, nil
+}
+
+func validateGitHubActorsSubnetIAMBindings(userEmail string, projectName string, region string, subnetName string) bool {
+	ctx := context.Background()
+	computeService, err := compute.NewService(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Get the IAM policy for the subnet.
+	policy, err := computeService.Subnetworks.GetIamPolicy(projectName, region, subnetName).Context(ctx).Do()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Check if the user has the required permission.
+	hasAccess := false
+	for _, binding := range policy.Bindings {
+		if approvedRoles[binding.Role] {
+			for _, member := range binding.Members {
+				if fmt.Sprintf("user:%s", userEmail) == member {
+					hasAccess = true
+					break
+				}
+			}
+		}
+	}
+
+	if hasAccess {
+		log.Println(fmt.Sprintf("User: %s has '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName))
+		return true
+	} else {
+		log.Println(fmt.Sprintf("User: %s does NOT have '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName))
+		return false
+	}
+	return false
 }
 
 // lastIP calculates the last IP in a given IP network.
