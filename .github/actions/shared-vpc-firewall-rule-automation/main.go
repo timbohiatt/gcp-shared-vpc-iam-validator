@@ -261,6 +261,12 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 			if destinationRanges, ok = ruleWith["destination_ranges"].([]string); !ok {
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Ingress) Configuration Missing Required Key/Value: destination_ranges")
+			} else {
+				log.Println("_+_+_+_+_+_+_+_+_+_+")
+				log.Println("_+_+_+_+_+_+_+_+_+_+")
+				log.Println(ruleWith["destination_ranges"])
+				log.Println("_+_+_+_+_+_+_+_+_+_+")
+				log.Println("_+_+_+_+_+_+_+_+_+_+")
 			}
 		}
 
