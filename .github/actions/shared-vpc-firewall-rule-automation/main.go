@@ -264,7 +264,7 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 			}
 
 			// Validate destination_ranges contain Values
-			if len(ruleWith["destination_ranges"] <= 0 {
+			if len(ruleWith["destination_ranges"] <= 0) {
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'destination_ranges' is empty")
 			}
@@ -284,7 +284,7 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 			}
 
 			// Validate source_ranges contain Values
-			if len(ruleWith["source_ranges"]) <= 0 {
+			if len(ruleWith["source_ranges"]) <= 0) {
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'source_ranges' is empty")
 			}
