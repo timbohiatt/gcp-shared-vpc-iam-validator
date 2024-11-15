@@ -264,13 +264,13 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 			}
 
 			// Validate destination_ranges contain Values
-			if len(ruleWith["destination_ranges"].([]string)) <= 0 {
+			if len(ruleWith["destination_ranges"] <= 0 {
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'destination_ranges' is empty")
 			}
 
 			// Output the Listed Destination Ranges
-			for idx, ipRange := range ruleWith["destination_ranges"].([]string) {
+			for idx, ipRange := range ruleWith["destination_ranges"] {
 				log.Println(fmt.Sprintf("Destination IP range [%d]: %s", idx, ipRange))
 			}
 		}
@@ -284,13 +284,13 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 			}
 
 			// Validate source_ranges contain Values
-			if len(ruleWith["source_ranges"].([]string)) <= 0 {
+			if len(ruleWith["source_ranges"]) <= 0 {
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'source_ranges' is empty")
 			}
 
 			// Output the Listed Destination Ranges
-			for idx, ipRange := range ruleWith["source_ranges"].([]string) {
+			for idx, ipRange := range ruleWith["source_ranges"] {
 				log.Println(fmt.Sprintf("Source IP range [%d]: %s", idx, ipRange))
 			}
 		}
