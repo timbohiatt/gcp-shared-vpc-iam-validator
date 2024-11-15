@@ -1,6 +1,6 @@
 ---
 ingress:
-  allow-8080-to-web-app:
+  allow-tim-to-web-app:
     subnet_name: "tims subnet"
     subnet_region: "us-central1"
     description: "Allow traffic on premise to web app on port 80"
