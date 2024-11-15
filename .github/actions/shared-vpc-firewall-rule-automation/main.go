@@ -257,6 +257,11 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 
 		// Validations Specific to Ingress Rules
 		if ruleType == "ingress" {
+			log.Println("_+_+_+_+_+_+_+_+_+_+")
+			log.Println("_+_+_+_+_+_+_+_+_+_+")
+			log.Println(ruleWith["destination_ranges"])
+			log.Println("_+_+_+_+_+_+_+_+_+_+")
+			log.Println("_+_+_+_+_+_+_+_+_+_+")
 			// Check if Rule has destination_ranges
 			if destinationRanges, ok = ruleWith["destination_ranges"].([]string); !ok {
 				result.status = false
