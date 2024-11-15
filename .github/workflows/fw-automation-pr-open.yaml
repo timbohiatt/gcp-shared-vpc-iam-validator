@@ -2,7 +2,7 @@ name: 'PR Open Validation'
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize, reopened]
     branches:
       - main
     paths: 
