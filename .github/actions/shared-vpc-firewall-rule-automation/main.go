@@ -270,11 +270,11 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 
 		// Validations Specific to Ingress Rules
 		if ruleType == "ingress" {
-			// Assert if Rule has destination_ranges
-			if _, ok = ruleWith["destination_ranges"].([]string); !ok {
-				result.status = false
-				result.errors = append(result.errors, "Firewall Rule (Ingress) Configuration Missing Required Key/Value: destination_ranges")
-			}
+			// // Assert if Rule has destination_ranges
+			// if _, ok = ruleWith["destination_ranges"].([]string); !ok {
+			// 	result.status = false
+			// 	result.errors = append(result.errors, "Firewall Rule (Ingress) Configuration Missing Required Key/Value: destination_ranges")
+			// }
 
 			// Assert if destination_ranges is a string array
 			if destinationRanges, ok := ruleWith["destination_ranges"].([]interface{}); ok {
@@ -289,16 +289,19 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 				for _, cidr := range destinationRanges {
 					cidrsPendingValidation = append(cidrsPendingValidation, cidr.(string))
 				}
+			} else {
+				result.status = false
+				result.errors = append(result.errors, "Firewall Rule (Ingress) Configuration Missing Required Key/Value: destination_ranges")
 			}
 		}
 
 		// Validations Specific to Egress Rules
 		if ruleType == "egress" {
-			// Assert if Rule has destination_ranges
-			if _, ok = ruleWith["source_ranges"].([]string); !ok {
-				result.status = false
-				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing Required Key/Value: source_ranges")
-			}
+			// // Assert if Rule has destination_ranges
+			// if _, ok = ruleWith["source_ranges"].([]string); !ok {
+			// 	result.status = false
+			// 	result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing Required Key/Value: source_ranges")
+			// }
 
 			// Assert if destination_ranges is a string array
 			if destinationRanges, ok := ruleWith["destination_ranges"].([]interface{}); ok {
@@ -313,6 +316,9 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 				for _, cidr := range destinationRanges {
 					cidrsPendingValidation = append(cidrsPendingValidation, cidr.(string))
 				}
+			} else {
+				result.status = false
+				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing Required Key/Value: source_ranges")
 			}
 		}
 
