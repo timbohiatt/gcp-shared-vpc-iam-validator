@@ -339,7 +339,7 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 		access := validateGitHubActorsSubnetIAMBindings(c.userEmail, c.hostNetworkProject, subnetRegion, subnetName)
 		if !access {
 			result.status = false
-			result.errors = append(result.errors, fmt.Sprintf("User: %s does not have Network User or Higher IAM Permissions on Subnet: %s within the Shared VPC at the time of validation", c.userEmail))
+			result.errors = append(result.errors, fmt.Sprintf("User: %s does not have Network User or Higher IAM Permissions on Subnet: %s (region: %s) within the Shared VPC at the time of validation", c.userEmail, subnetName, subnetRegion))
 			return result
 		}
 		// Return Now!
