@@ -460,3 +460,78 @@ func checkFileExists(path string) error {
 // } else {
 // 	fmt.Printf("User: %s does not have '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName)
 // }
+
+/*
+
+package main
+
+import (
+	"fmt"
+	"net"
+)
+
+// checkCIDRRanges takes two string arrays of CIDR ranges, listA and listB,
+// and returns a new string array containing the CIDR ranges from listA that
+// do not fit entirely within any CIDR range in listB.
+func checkCIDRRanges(listA, listB []string) []string {
+	failedRanges := []string{}
+
+	for _, cidrA := range listA {
+		_, ipNetA, err := net.ParseCIDR(cidrA)
+		if err != nil {
+			// Handle parsing error if necessary
+			fmt.Printf("Error parsing CIDR %s: %v\n", cidrA, err)
+			continue
+		}
+
+		found := false
+		for _, cidrB := range listB {
+			_, ipNetB, err := net.ParseCIDR(cidrB)
+			if err != nil {
+				// Handle parsing error if necessary
+				fmt.Printf("Error parsing CIDR %s: %v\n", cidrB, err)
+				continue
+			}
+
+			if ipNetB.Contains(ipNetA.IP) && ipNetB.Contains(lastIP(ipNetA)) {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			failedRanges = append(failedRanges, cidrA)
+		}
+	}
+
+	return failedRanges
+}
+
+// lastIP calculates the last IP in a given IP network.
+func lastIP(n *net.IPNet) net.IP {
+	ip := make(net.IP, len(n.IP.To4()))
+	copy(ip, n.IP.To4())
+	for i := 0; i < len(ip); i++ {
+		ip[i] |= ^n.Mask[i]
+	}
+	return ip
+}
+
+func main() {
+	// Example usage
+	listA1 := []string{"192.168.0.14/32", "192.168.0.15/32"}
+	listB1 := []string{"192.168.0.0/29", "192.168.0.8/29"}
+	fmt.Println(checkCIDRRanges(listA1, listB1)) // Output: []
+
+	listA2 := []string{"192.168.0.14/32", "10.10.1.0/16"}
+	listB2 := []string{"192.168.0.0/29", "192.168.0.8/29"}
+	fmt.Println(checkCIDRRanges(listA2, listB2)) // Output: [10.10.1.0/16]
+
+	listA3 := []string{"0.0.0.0/0", "10.10.1.0/16"}
+	listB3 := []string{"192.168.0.0/29", "192.168.0.8/29"}
+	fmt.Println(checkCIDRRanges(listA3, listB3)) // Output: [0.0.0.0/0 10.10.1.0/16]
+}
+
+
+
+*/

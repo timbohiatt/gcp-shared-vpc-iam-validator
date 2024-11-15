@@ -79,13 +79,13 @@ jobs:
 
       - name: Get GitHub Actor Email
         id: get-github-actor-email
-        uses: evvanErb/get-github-email-by-username-action@v1.25
+        uses: evvanErb/get-github-email-by-username-action@v2.0
         with:
           github-username: ${{github.actor}}
 
       - name: 'Set up Go 1.x'
         id: 'go-setup'  
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5.1.0
         with:
           go-version: '1.22'
 
