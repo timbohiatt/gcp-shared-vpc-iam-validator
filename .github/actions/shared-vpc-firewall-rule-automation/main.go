@@ -347,9 +347,9 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 		for invalidCIDR := range invalidCIDRs {
 			result.status = false
 			if ruleType == "ingress" {
-				result.errors = append(result.errors, fmt.Sprintf("Firewall Rule configuration contains a destination_ranges entry: '%s' CIDR that is not part of the firewall rules Primary or Secondary subnet CIDR ranges; Invalid ", ruleType, invalidCIDR))
+				result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) configuration contains a destination_ranges entry: '%s' CIDR that is not part of the firewall rules Primary or Secondary subnet CIDR ranges; Invalid ", ruleType, invalidCIDR))
 			} else {
-				result.errors = append(result.errors, fmt.Sprintf("Firewall Rule configuration contains a source_ranges entry: '%s' CIDR that is not part of the firewall rules Primary or Secondary subnet CIDR ranges; Invalid ", ruleType, invalidCIDR))
+				result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) configuration contains a source_ranges entry: '%s' CIDR that is not part of the firewall rules Primary or Secondary subnet CIDR ranges; Invalid ", ruleType, invalidCIDR))
 			}
 			return result
 		}
