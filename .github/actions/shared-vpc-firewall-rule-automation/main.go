@@ -273,15 +273,16 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 			}
 		}
 
-		// No Further Validation Possible Without Subnet Name, Region, Ingress/Egress SRC/DST Ranges
-		if !result.status {
-			return result
-		}
-		
 		log.Println(subnetName)
 		log.Println(subnetRegion)
 		log.Println(destinationRanges)
 		log.Println(sourceRanges)
+
+		// No Further Validation Possible Without Subnet Name, Region, Ingress/Egress SRC/DST Ranges
+		if !result.status {
+			return result
+		}
+
 		// Staging for Future Testing
 		_ = subnetName
 		_ = subnetRegion
