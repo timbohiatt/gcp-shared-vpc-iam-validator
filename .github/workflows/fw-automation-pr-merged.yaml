@@ -1,0 +1,70 @@
+name: 'PR Open Validation'
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+    paths: 
+      - 'firewall-rules/**'
+  workflow_dispatch:
+
+env: 
+  CHANGED_FILE_LIST: './changed-files-list.csv'
+
+concurrency:
+  group: ci-fw-validator-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  adhoc:
+    name: FW Automation - ADHOC Validation
+    runs-on: 'ubuntu-latest'
+    if: github.event.pull_request.merged == true
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+      
+      - name: Authenticate with Google Cloud 
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          token_format: access_token
+          workload_identity_provider: 'projects/${{ vars.WIF_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ vars.WIF_POOL_NAME }}/providers/${{ vars.WIF_PROVIDER_NAME }}'
+          service_account: '${{ vars.WIF_SA_EMAIL }}'
+          access_token_lifetime: 300s
+
+      - name: 'Terraform Format'
+        id: tf-fmt
+        run: terraform fmt
+        working-directory: ./infra/firewall-rule-automation
+
+      - name: 'Terraform Init'
+        id: tf-init
+        run: terraform init -backend-config="bucket=${{ env.TF_BACKEND_BUCKET }}"
+        working-directory: ./infra/firewall-rule-automation
+
+      - name: 'Terraform Validate'
+        id: tf-validate
+        run: terraform validate -no-color
+        working-directory: ./infra/firewall-rule-automation
+
+      - name: 'Terraform Plan'
+        id: tf-plan
+        run: terraform plan 
+        working-directory: ./infra/firewall-rule-automation
+        continue-on-error: false
+
+      - name: 'Terraform Apply'
+        id: tf-apply
+        run: terraform apply -auto-approve 
+        working-directory: ./infra/firewall-rule-automation
+        continue-on-error: false
+
+    
+      
+

@@ -1,0 +1,14 @@
+---
+ingress:
+  allow-tcp-inbound-80-vm1:
+    subnet_name: "team-a"
+    subnet_region: "europe-west3"
+    description: "Allow ingress traffic to vm1 on port 80"
+    source_ranges:
+      - 0.0.0.0/0
+    destination_ranges:
+      - 10.0.0.1/32
+    rules:
+      - protocol: tcp
+        ports:
+          - 80

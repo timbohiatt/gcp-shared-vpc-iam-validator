@@ -17,7 +17,7 @@ inputs:
   validate-all: 
     description: Enforce the Validation of all Firewall Rules against GitHub Actor's IAM Bindings
     required: true 
-    default: "true"
+    default: "false"
   user-email: 
     description: GitHub user Email (Should also be GCP User Email)
     required: true
