@@ -331,25 +331,25 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 		subnetCIDRs, err := getGoogleCloudVPCSubnetCIDRs(c.hostNetworkProject, subnetRegion, subnetName)
 		if err != nil {
 			result.status = false
-			result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) Configuration Contains Incompatible subnet_name = '%s', subnet_region = '%s' & host_network_project = '%s' values: subnet not found", subnetName, subnetRegion, c.hostNetworkProject, ruleType))
+			result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) '%s' Configuration Contains Incompatible subnet_name = '%s', subnet_region = '%s' & host_network_project = '%s' values: subnet not found", ruleType, ruleName, subnetName, subnetRegion, c.hostNetworkProject))
 			return result
 		}
 
 		// Ensure at least One CIDR is Valid
 		if len(subnetCIDRs) <= 0 {
 			result.status = false
-			result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) Configuration contains a Subnet with no CIDR ranges; Invalid", ruleType))
+			result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) '%s' Configuration contains a Subnet with no CIDR ranges; Invalid", ruleType, ruleName))
 			return result
 		}
 
 		// Validate that the Firewall rules contain only source and destination CIDR's that align with the Subnet CIDR's from the configuration
 		invalidCIDRs := checkCIDRRanges(cidrsPendingValidation, subnetCIDRs)
-		for invalidCIDR := range invalidCIDRs {
+		for _, invalidCIDR := range invalidCIDRs {
 			result.status = false
 			if ruleType == "ingress" {
-				result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) configuration contains a destination_ranges entry: '%s' CIDR that is not part of the firewall rules Primary or Secondary subnet CIDR ranges; Invalid ", ruleType, invalidCIDR))
+				result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) '%s' configuration contains a destination_ranges entry: '%s' CIDR that is not part of the firewall rules Primary or Secondary subnet CIDR ranges; Invalid ", ruleType, ruleName, invalidCIDR))
 			} else {
-				result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) configuration contains a source_ranges entry: '%s' CIDR that is not part of the firewall rules Primary or Secondary subnet CIDR ranges; Invalid ", ruleType, invalidCIDR))
+				result.errors = append(result.errors, fmt.Sprintf("Firewall Rule (%s) '%s' configuration contains a source_ranges entry: '%s' CIDR that is not part of the firewall rules Primary or Secondary subnet CIDR ranges; Invalid ", ruleType, ruleName, invalidCIDR))
 			}
 			return result
 		}
