@@ -38,11 +38,13 @@ type ValidationResults struct {
 }
 
 func (r *ValidationResults) outputResults() {
-	log.Println("\n\n")
+	log.Println()
+	log.Println()
 	log.Println(fmt.Sprintf("Firewall Rules Containing Errors: %d", len(r.results)))
 	for _, result := range r.results {
+		log.Println()
+		log.Println()
 		result.outputResult()
-		log.Println("\n\n")
 	}
 }
 
@@ -69,8 +71,6 @@ func (r *ValidationResult) outputResult() {
 			// Output Each Validation Error
 			log.Println(fmt.Sprintf("\t [%d] Error: %s", idx+1, err))
 		}
-		log.Println()
-		log.Println()
 	}
 }
 
