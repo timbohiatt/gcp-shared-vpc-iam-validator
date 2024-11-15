@@ -564,11 +564,7 @@ func validateGitHubActorsSubnetIAMBindings(userEmail string, projectName string,
 	}
 
 	if hasAccess {
-		log.Println(fmt.Sprintf("User: %s has '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName))
 		return true
-	} else {
-		log.Println(fmt.Sprintf("User: %s does NOT have '%s' permission on subnet '%s'\n", userEmail, "roles/compute.networkUser", subnetName))
-		return false
 	}
 	return false
 }
@@ -583,14 +579,10 @@ func lastIP(n *net.IPNet) net.IP {
 	return ip
 }
 
-// checkCIDRRanges takes two string arrays of CIDR ranges, listA and listB,
-// and returns a new string array containing the CIDR ranges from listA that
-// do not fit entirely within any CIDR range in listB.
 func checkCIDRRanges(ruleCIDRs, subnetCIDRs []string) []string {
 	failedRanges := []string{}
 
 	for _, cidrA := range ruleCIDRs {
-		log.Println("Checking CIDR: ", cidrA)
 		_, ipNetA, err := net.ParseCIDR(cidrA)
 		if err != nil {
 			// Handle parsing error if necessary
@@ -600,7 +592,6 @@ func checkCIDRRanges(ruleCIDRs, subnetCIDRs []string) []string {
 
 		found := false
 		for _, cidrB := range subnetCIDRs {
-			log.Println("Comparing Against CIDR: ", cidrB)
 			_, ipNetB, err := net.ParseCIDR(cidrB)
 			if err != nil {
 				// Handle parsing error if necessary
