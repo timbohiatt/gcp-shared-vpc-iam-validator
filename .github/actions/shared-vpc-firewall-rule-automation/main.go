@@ -53,11 +53,14 @@ type ValidationResult struct {
 func (r *ValidationResult) outputResult() {
 	// If Validation Status is not True
 	if !r.status {
-		log.Println("Firewall Rule Name: ", r.firewallRuleName)
-		log.Println("Firewall Rule File: ", r.file)
-		log.Println("Firewall Rule File Validated: ", r.status)
-		log.Println(fmt.Sprintf("Firewall Rule Validation Errors: %d", len(r.errors)))
-		log.Println("Firewall Rule Validation Errors:")
+		log.Println("Firewall Rule:")
+		log.Println("  - Name: ", r.firewallRuleName)
+		log.Println("  - Source File: ", r.file)
+		log.Println("  - Rule Type : ", r.ruleType)
+		log.Println("  - Rule Valid? : ", r.status)
+		log.Println("  - Error Count: %d", len(r.errors))
+		log.Println()
+		log.Println("Validation Errors:")
 		for idx, err := range r.errors {
 			// Output Each Validation Error
 			log.Println(fmt.Sprintf("\t [%d] Error: %s", idx+1, err))
@@ -237,8 +240,8 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 		// Declare Values
 		var subnetName string
 		var subnetRegion string
-		var destinationRanges []string
-		var sourceRanges []string
+		//var destinationRanges []string
+		//var sourceRanges []string
 
 		// Check if Rule has Subnet Name
 		if subnetName, ok = ruleWith["subnet_name"].(string); !ok {
@@ -255,13 +258,19 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 		// Validations Specific to Ingress Rules
 		if ruleType == "ingress" {
 			// Check if Rule has destination_ranges
-			if destinationRanges, ok = ruleWith["destination_ranges"].([]string); !ok {
+			if _, ok = ruleWith["destination_ranges"].([]string); !ok {
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Ingress) Configuration Missing Required Key/Value: destination_ranges")
 			}
 
+			// Validate destination_ranges contain Values
+			if len(ruleWith["destination_ranges"].([]string)) <= 0 {
+				result.status = false
+				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'destination_ranges' is empty")
+			}
+
 			// Output the Listed Destination Ranges
-			for idx, ipRange := range destinationRanges {
+			for idx, ipRange := range ruleWith["destination_ranges"].([]string) {
 				log.Println(fmt.Sprintf("Destination IP range [%d]: %s", idx, ipRange))
 			}
 		}
@@ -269,13 +278,19 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 		// Validations Specific to Egress Rules
 		if ruleType == "egress" {
 			// Check if Rule has destination_ranges
-			if sourceRanges, ok = ruleWith["source_ranges"].([]string); !ok {
+			if _, ok = ruleWith["source_ranges"].([]string); !ok {
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing Required Key/Value: source_ranges")
 			}
 
+			// Validate source_ranges contain Values
+			if len(ruleWith["source_ranges"].([]string)) <= 0 {
+				result.status = false
+				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'source_ranges' is empty")
+			}
+
 			// Output the Listed Destination Ranges
-			for idx, ipRange := range sourceRanges {
+			for idx, ipRange := range ruleWith["source_ranges"].([]string) {
 				log.Println(fmt.Sprintf("Source IP range [%d]: %s", idx, ipRange))
 			}
 		}
@@ -293,8 +308,8 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 		// Staging for Future Testing
 		_ = subnetName
 		_ = subnetRegion
-		_ = destinationRanges
-		_ = sourceRanges
+		//_ = destinationRanges
+		//_ = sourceRanges
 
 	}
 
