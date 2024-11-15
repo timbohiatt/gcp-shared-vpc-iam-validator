@@ -255,11 +255,6 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 			result.errors = append(result.errors, "Firewall Rule Configuration Missing Key/Value: subnet_region")
 		}
 
-		// No Further Validation Possible Without Subnet Name & Region
-		if !result.status {
-			return result
-		}
-
 		// Validations Specific to Ingress Rules
 		if ruleType == "ingress" {
 			// Check if Rule has destination_ranges
@@ -278,7 +273,7 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 			}
 		}
 
-		// No Further Validation Possible Without Ingress/Egress SRC/DST Filters
+		// No Further Validation Possible Without Subnet Name, Region, Ingress/Egress SRC/DST Ranges
 		if !result.status {
 			return result
 		}
