@@ -7,7 +7,7 @@ ingress:
     source_ranges:
       - 0.0.0.0/0
     destination_ranges:
-      - 192.168.0.32/27
+      - 127.168.0.32/27
     rules:
       - protocol: tcp
         ports:
