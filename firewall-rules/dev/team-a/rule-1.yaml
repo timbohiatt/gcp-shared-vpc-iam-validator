@@ -13,10 +13,10 @@ ingress:
         ports:
           - 80
 egress:
-  team-a-allow-tcp-outbound-3000:
+  team-a-allow-tcp-outbound-5000:
     subnet_name: "team-a"
     subnet_region: "europe-west3"
-    description: "Allow egress traffic from two ranges on port 3000"
+    description: "Allow egress traffic from two ranges on port 5000"
     source_ranges:
       - 192.168.0.4/30
       - 192.168.0.0/30
@@ -25,4 +25,4 @@ egress:
     rules:
       - protocol: tcp
         ports:
-          - 3000
+          - 5000
