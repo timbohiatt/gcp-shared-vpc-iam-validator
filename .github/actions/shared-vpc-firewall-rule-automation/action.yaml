@@ -36,5 +36,5 @@ runs:
         ABS_PATH: ${{ inputs.abs-path }}
         RULES_PATH: ${{ inputs.rules-path }}
         VALIDATE_ALL: ${{ inputs.validate-all }}
-        USER_EMAIL: timhiatt@google.com #${{ inputs.user-email }}
+        USER_EMAIL: ${{ inputs.user-email }}
         CHANGED_FILE_LIST: ${{ inputs.changed-file-list }}
