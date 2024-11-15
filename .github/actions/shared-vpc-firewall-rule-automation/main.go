@@ -330,12 +330,14 @@ func validateRule(c *ValidatorConfig, ruleType, filePath, ruleName string, rule 
 		// Get Subnet IP Ranges
 		cidrs, err := getGoogleCloudVPCSubnetCIDRs(c.hostNetworkProject, subnetRegion, subnetName)
 		if err != nil {
-			log.Println("Error with Subnets...")
 			log.Println(err)
 			return result
 		}
-		log.Println("Did something with  Subnets...")
 		_ = cidrs
+
+		if !result.status {
+			return result
+		}
 
 	}
 
@@ -582,10 +584,26 @@ func getGoogleCloudVPCSubnetCIDRs(projectName string, region string, subnetName 
 		return nil, err
 	}
 
-	subnet := computeService.Subnetworks.Get(projectName, region, subnetName)
-	_ = subnet
+	//subnet := computeService.Subnetworks.Get(projectName, region, subnetName)
 
-	log.Println(subnet)
+	subnet, err := computeService.Subnetworks.Get(projectName, region, subnetName).Do()
+	if err != nil {
+		return nil, err
+	}
+
+	// Access the primary CIDR range
+	primaryCIDR := subnet.IpCidrRange
+
+	// Access the secondary CIDR ranges
+	secondaryCIDRs := make([]string, 0)
+	for _, secondaryRange := range subnet.SecondaryIpRanges {
+		secondaryCIDRs = append(secondaryCIDRs, secondaryRange.IpCidrRange)
+	}
+
+	// Print the results
+	fmt.Println("Primary CIDR:", primaryCIDR)
+	fmt.Println("Secondary CIDRs:", secondaryCIDRs)
+
 	// _ = computeService
 
 	// c, err := compute.NewSubnetworksRESTClient(ctx, option.WithCredentialsFile("/path/to/your/credentials.json"))
