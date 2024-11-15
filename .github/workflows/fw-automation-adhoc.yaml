@@ -1,11 +1,6 @@
 name: 'ADHOC Validation'
 
 on:
-  push:
-    branches:
-      - '**/*'
-    paths: 
-      - 'firewall-rules/**'
   workflow_dispatch:
 
 env: 
