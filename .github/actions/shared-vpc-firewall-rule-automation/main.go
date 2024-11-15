@@ -240,6 +240,7 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 		// Declare Values
 		var subnetName string
 		var subnetRegion string
+		var cidrsPendingValidation []string
 		//var destinationRanges []string
 		//var sourceRanges []string
 
@@ -257,60 +258,51 @@ func validateRule(ruleType, filePath, ruleName string, rule interface{}) *Valida
 
 		// Validations Specific to Ingress Rules
 		if ruleType == "ingress" {
-			// Check if Rule has destination_ranges
+			// Assert if Rule has destination_ranges
 			if _, ok = ruleWith["destination_ranges"].([]string); !ok {
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Ingress) Configuration Missing Required Key/Value: destination_ranges")
 			}
 
+			// Assert if destination_ranges is a string array
 			if destinationRanges, ok := ruleWith["destination_ranges"].([]interface{}); ok {
+
+				// Check that destination_ranges contains values
+				if len(destinationRanges) <= 0 {
+					result.status = false
+					result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'destination_ranges' is empty")
+				}
+
+				// Collect Up CIDRs for Subnet Validation
 				for _, cidr := range destinationRanges {
-					log.Println(cidr)
+					cidrsPendingValidation = append(cidrsPendingValidation, cidr.(string))
 				}
 			}
-
-			// // Validate destination_ranges contain Values
-			// if len(ruleWith["destination_ranges"].([]string)) <= 0 {
-			// 	result.status = false
-			// 	result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'destination_ranges' is empty")
-			// }
-
-			// // Output the Listed Destination Ranges
-			// for idx, ipRange := range ruleWith["destination_ranges"].([]string) {
-			// 	log.Println(fmt.Sprintf("Destination IP range [%d]: %s", idx, ipRange))
-			// }
 		}
 
 		// Validations Specific to Egress Rules
 		if ruleType == "egress" {
-			// Check if Rule has destination_ranges
+			// Assert if Rule has destination_ranges
 			if _, ok = ruleWith["source_ranges"].([]string); !ok {
 				result.status = false
 				result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing Required Key/Value: source_ranges")
 			}
 
-			if sourceRanges, ok := ruleWith["source_ranges"].([]interface{}); ok {
-				for _, cidr := range sourceRanges {
-					log.Println(cidr)
+			// Assert if destination_ranges is a string array
+			if destinationRanges, ok := ruleWith["destination_ranges"].([]interface{}); ok {
+
+				// Check that destination_ranges contains values
+				if len(destinationRanges) <= 0 {
+					result.status = false
+					result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'destination_ranges' is empty")
+				}
+
+				// Collect Up CIDRs for Subnet Validation
+				for _, cidr := range destinationRanges {
+					cidrsPendingValidation = append(cidrsPendingValidation, cidr.(string))
 				}
 			}
-
-			// // Validate source_ranges contain Values
-			// if len(ruleWith["source_ranges"].([]string)) <= 0 {
-			// 	result.status = false
-			// 	result.errors = append(result.errors, "Firewall Rule (Egress) Configuration Missing 'source_ranges' is empty")
-			// }
-
-			// // Output the Listed Destination Ranges
-			// for idx, ipRange := range ruleWith["source_ranges"].([]string) {
-			// 	log.Println(fmt.Sprintf("Source IP range [%d]: %s", idx, ipRange))
-			// }
 		}
-
-		// log.Println(subnetName)
-		// log.Println(subnetRegion)
-		// log.Println(destinationRanges)
-		// log.Println(sourceRanges)
 
 		// No Further Validation Possible Without Subnet Name, Region, Ingress/Egress SRC/DST Ranges
 		if !result.status {
