@@ -18,7 +18,7 @@ egress:
     subnet_region: "europe-west3"
     description: "Allow egress traffic from two ranges on port 3000"
     source_ranges:
-      - 192.168.0.4/30
+      - 192.168.0.18/31
     destination_ranges:
       - 0.0.0.0/0
     rules:
