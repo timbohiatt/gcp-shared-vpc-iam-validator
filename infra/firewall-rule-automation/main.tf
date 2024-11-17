@@ -1,14 +1,15 @@
+# Configure the Terraform backend
+terraform {
+  backend "gcs" {
+    bucket = "tf-state-493242"
+    prefix = "terraform/state"
+  }
+
+}
+
 locals {
   yaml_dir = "../../firewall-rules"
 }
-
-# data "utils_deep_merge_yaml" "merged_yaml" {
-#   input = [for file in fileset(local.yaml_dir, "**/*.yaml") : file("${local.yaml_dir}/${file}")]
-# }
-
-# output "applied_firewall_rules" {
-#   value = data.utils_deep_merge_yaml.merged_yaml.output
-# }
 
 module "vpc-trusted-internal-firewall" {
   source     = "../modules/net-vpc-firewall"
