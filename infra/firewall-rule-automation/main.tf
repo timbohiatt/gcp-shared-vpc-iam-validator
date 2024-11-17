@@ -1,7 +1,7 @@
 # Configure the Terraform backend
 terraform {
   backend "gcs" {
-    bucket = "tf-state-493242"
+    #bucket = "tf-state-493242"
     prefix = "terraform/state"
   }
 
