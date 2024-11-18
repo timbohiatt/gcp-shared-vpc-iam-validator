@@ -1,27 +1,33 @@
 ---
 ingress:
-  team-a-allow-tcp-inbound-80-vm1:
-    subnet_name: "team-a"
+  team-b-allow-tcp-inbound-5000-vm1:
+    subnet_name: "team-b"
     subnet_region: "europe-west3"
-    description: "Allow ingress traffic to vms on port 80"
+    description: "Allow ingress traffic to vm1 on port 5000"
     source_ranges:
       - 0.0.0.0/0
     destination_ranges:
-      - 192.168.0.8/30
+      - 192.168.0.60/32
+    rules:
+      - protocol: tcp
+        ports:
+          - 5000
+
+egress:
+  team-b-allow-tcp-outbound-select-ports:
+    subnet_name: "team-b"
+    subnet_region: "europe-west3"
+    description: "Allow egress traffic from two ranges on select ports"
+    source_ranges:
+      - 192.168.0.56/30
+      - 192.168.0.60/30
+    destination_ranges:
+      - 0.0.0.0/0
     rules:
       - protocol: tcp
         ports:
           - 80
-egress:
-  team-a-allow-tcp-outbound-3000-vm1:
-    subnet_name: "team-a"
-    subnet_region: "europe-west3"
-    description: "Allow egress traffic from two ranges on port 3000"
-    source_ranges:
-      - 192.168.0.18/31
-    destination_ranges:
-      - 0.0.0.0/0
-    rules:
-      - protocol: tcp
-        ports:
+          - 8080
           - 3000
+          - 4000
+          - 5000
