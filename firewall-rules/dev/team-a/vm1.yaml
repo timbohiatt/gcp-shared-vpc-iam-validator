@@ -1,7 +1,7 @@
 ---
 ingress:
   team-b-allow-tcp-inbound-5000-vm1:
-    subnet_name: "team-b"
+    subnet_name: "team-a"
     subnet_region: "europe-west3"
     description: "Allow ingress traffic to vm1 on port 5000"
     source_ranges:
@@ -15,7 +15,7 @@ ingress:
 
 egress:
   team-b-allow-tcp-outbound-select-ports:
-    subnet_name: "team-b"
+    subnet_name: "team-a"
     subnet_region: "europe-west3"
     description: "Allow egress traffic from two ranges on select ports"
     source_ranges:
